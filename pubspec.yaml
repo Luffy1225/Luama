@@ -1,0 +1,33 @@
+name: luama
+description: "A new Flutter project."
+publish_to: "none" # 此行可防止不小心將此套件發佈到 pub.dev
+
+version: 1.0.0+1 # 應用程式版本號，格式為 version+build（用於版本控制）
+
+environment:
+  sdk: ^3.7.0 # 指定 Dart SDK 的版本需求
+
+dependencies:
+  flutter:
+    sdk: flutter # 引用 Flutter SDK 作為主要依賴
+  cupertino_icons: ^1.0.8 # 提供 iOS 風格的圖示套件
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter # Flutter 測試用的標準套件
+  flutter_lints: ^5.0.0 # 建議的程式碼檢查規則（靜態分析）
+  flutter_launcher_icons: ^0.13.1 # ⬅️ 套件：用來自動產生 App 圖示
+
+flutter_launcher_icons:
+  android: true # 啟用 Android 圖示產生
+  ios: true # 啟用 iOS 圖示產生
+  windows:
+    generate: true # ✅ 啟用 Windows 圖示產生
+    image_path: "assets/icon/LuamaCircle.png" # ✅ 指定圖示路徑
+  image_path: "assets/icon/LuamaCircle.png" # ⬅️ 指定圖示來源圖片路徑（你必須手動放入這張圖）
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true # 包含 Material Design 圖示支援（可使用 `Icons.xxx`）
+
+# dart run flutter_launcher_icons
