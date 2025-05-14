@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../util/app_colors.dart'; // 引用自訂顏色
 import '../util/user.dart';
+import '../util/Page_animation.dart';
 
 import 'settingpage.dart';
-import '../main.dart';
 
 class ChatPage extends StatefulWidget {
   final TUser selfUser;
   final TUser targetUser;
 
   // 定義建構子來接收自訂參數
-  ChatPage(this.selfUser, this.targetUser);
+  const ChatPage(this.selfUser, this.targetUser);
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -224,42 +224,21 @@ class _ChatPageState extends State<ChatPage> {
 
   void _onReturnPressed() {
     SelfUser.closeConnection();
-
-    // // 這裡使用 Navigator 來導向 Homepage 頁面
-    // Navigator.pushReplacement(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => Homepage()),
-    // );
-
     Navigator.pop(context);
   }
 
   void _onSettingsPressed() {
-    Navigator.of(context).push(_createRoute());
+    Navigator.of(context).push(
+      createRoute(
+        SettingPage(user: widget.selfUser),
+        Anima_Direction.FromRightIn,
+      ),
+    );
   }
 
   void _onVideoCallPressed() {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text("視訊功能尚未實作")));
-  }
-
-  Route _createRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => SettingPage(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0); // 從左邊進來
-        const end = Offset.zero;
-        const curve = Curves.ease;
-
-        final tween = Tween(
-          begin: begin,
-          end: end,
-        ).chain(CurveTween(curve: curve));
-        final offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
   }
 }

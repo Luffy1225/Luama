@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'util/app_colors.dart'; // 引用自訂顏色
 import 'util/user.dart';
+import 'util/Page_animation.dart';
 
-import 'util/server.dart';
-import 'util/client.dart';
-import 'util/animation.dart';
-
-import 'pages/settingpage.dart';
 import 'pages/chatpage.dart';
-import 'pages/homepage.dart';
 
 void main() {
   runApp(Luama());
@@ -87,20 +83,10 @@ class _HomepageState extends State<Homepage> {
                   ),
                   subtitle: Text('message'),
                   onTap: () {
-                    // 點擊可以觸發進入聊天頁
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder:
-                    //         (context) => ChatPage(
-                    //           MySelf,
-                    //           _userManager.getUserbyIndex(index),
-                    //         ),
-                    //   ),
-                    // );
                     Navigator.of(context).push(
                       createRoute(
                         ChatPage(MySelf, _userManager.getUserbyIndex(index)),
+                        Anima_Direction.FromRightIn,
                       ),
                     );
                   },
@@ -180,24 +166,5 @@ class UserManager {
 
   TUser getUserbyIndex(int index) {
     return users[index];
-  }
-
-  Route _createRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => SettingPage(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0); // 從左邊進來
-        const end = Offset.zero;
-        const curve = Curves.ease;
-
-        final tween = Tween(
-          begin: begin,
-          end: end,
-        ).chain(CurveTween(curve: curve));
-        final offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
   }
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -21,7 +23,6 @@ class TUser {
 
   // static const DEFAULT_IP = '192.168.56.1';
   // static const int DEFAULT_PORT = 8888;
-
   // static const DEFAULT_IP = "127.0.0.1";
   // static const int DEFAULT_PORT = 50007;
 
@@ -88,6 +89,10 @@ class TUser {
 
   void startClient() {
     client.connectToServer();
+  }
+
+  void connect(String ip, String port) {
+    client.connectToServer(ip_: ip, port_: int.tryParse(port));
   }
 
   // User 對外提供一個 onMessageReceived
