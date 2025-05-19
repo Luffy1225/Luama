@@ -1,16 +1,19 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../util/app_colors.dart'; // 引用自訂顏色
+import '../util/app_colors.dart';
 import '../util/user.dart';
 import '../util/Page_animation.dart';
-
+import '../util/chatmsg.dart';
 import 'settingpage.dart';
 
 class ChatPage extends StatefulWidget {
   final TUser selfUser;
   final TUser targetUser;
 
-  // 定義建構子來接收自訂參數
   const ChatPage(this.selfUser, this.targetUser);
 
   @override
@@ -21,36 +24,49 @@ class _ChatPageState extends State<ChatPage> {
   late TUser SelfUser;
   late TUser TargetUser;
 
+  bool is_fileExisted = false;
+
+  final List<ChatMsg> _JSON_messages = [];
   final List<String> _messages = [];
-  final List<String> _senders = []; // 記錄每條訊息的發送者
+  final List<String> _senders = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  File? _selectedImage; // 加入圖片選擇變數
 
   @override
   void initState() {
     super.initState();
-
-    // 使用傳遞的參數來初始化 SelfUser 和 TargetUser
     SelfUser = widget.selfUser;
     TargetUser = widget.targetUser;
 
-    // TargetUser.startServer();
     SelfUser.startClient();
 
-    // 自己收到訊息callback
-    SelfUser.onMessageReceived = (message) {
-      setState(() {
-        _messages.add(message);
-        _senders.add(TargetUser.userName); // 表示這是伺服器發送的訊息
-      });
+    SelfUser.onMessageReceived = (messageString) {
+      try {
+        // 將 JSON 字串轉換成 ChatMessage 物件
+        final jsonData = jsonDecode(messageString);
+        final chatmsg = ChatMsg.fromJson(jsonData);
 
-      Future.delayed(Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
+        print(jsonData);
+
+        // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
+        setState(() {
+          _JSON_messages.add(chatmsg);
+          // _messages.add(message.content);
+          // _senders.add(message.sender);
+        });
+
+        Future.delayed(Duration(milliseconds: 100), () {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        });
+      } catch (e) {
+        print("JSON parsing error: $e");
+      }
     };
   }
 
@@ -88,11 +104,14 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              itemCount: _messages.length,
+
+              // itemCount: _messages.length,
+              itemCount: _JSON_messages.length,
+
               itemBuilder: (context, index) {
-                final isMe =
-                    _senders[index] ==
-                    SelfUser.userName; // 判斷這條訊息是否是自己發送的 /////////
+                // final isMe = _senders[index] == SelfUser.userName;
+
+                final isMe = _JSON_messages[index].sender == SelfUser.userName;
 
                 return Align(
                   alignment:
@@ -125,17 +144,16 @@ class _ChatPageState extends State<ChatPage> {
                         Container(
                           constraints: BoxConstraints(
                             maxWidth: MediaQuery.of(context).size.width * 0.7,
-                          ), // 設定最大寬度
+                          ),
                           child: Text(
-                            _messages[index],
+                            // _messages[index],
+                            _JSON_messages[index].content,
+
                             style: TextStyle(
                               color: isMe ? Colors.white : Colors.black,
                             ),
-                            textAlign:
-                                isMe
-                                    ? TextAlign.right
-                                    : TextAlign.left, // 根據發送者調整對齊方式
-                            maxLines: null, // 允許多行顯示
+                            textAlign: isMe ? TextAlign.right : TextAlign.left,
+                            maxLines: null,
                           ),
                         ),
                       ],
@@ -152,15 +170,13 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 IconButton(
                   icon: Icon(Icons.add),
-                  onPressed: () {
-                    // 處理點擊事件
-                  },
-                  iconSize: 30, // 控制 + 按鈕的大小
+                  iconSize: 30,
+                  onPressed: () => _showImageOptions(context),
                 ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Container(
-                    height: 50, // 設定 TextField 的高度
+                    height: 50,
                     child: TextField(
                       controller: _controller,
                       onSubmitted: (_) => _sendMessage(),
@@ -169,7 +185,6 @@ class _ChatPageState extends State<ChatPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
-                        // 調整上下內部間距，避免文字被截斷
                         contentPadding: EdgeInsets.symmetric(
                           vertical: 14,
                           horizontal: 10,
@@ -180,10 +195,10 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 SizedBox(width: 8),
                 Container(
-                  height: 50, // 設定發送按鈕的高度
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: _sendMessage,
-                    child: Text("發送"),
+                    child: Icon(Icons.send_rounded),
                   ),
                 ),
               ],
@@ -196,13 +211,26 @@ class _ChatPageState extends State<ChatPage> {
 
   void _sendMessage() {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty && _selectedImage == null) return;
 
-    SelfUser.sendMessage(text);
+    ChatMsg message = ChatMsg(
+      sender: SelfUser.userName,
+      type: whatMsgType(text, _selectedImage),
+      content: text,
+      timestamp: GetTimeStamp(),
+    );
+
+    // SelfUser.sendMessage(text);
+    SelfUser.sendMessage(message);
 
     setState(() {
-      _messages.add(text);
-      _senders.add(SelfUser.userName); // client 傳出的
+      // _messages.add(text);
+      // _senders.add(SelfUser.userName);
+
+      _JSON_messages.add(message);
+      for (int i = 0; i < _JSON_messages.length; i++) {
+        print(ChatMsg2String(_JSON_messages[i]));
+      }
     });
 
     _controller.clear();
@@ -222,6 +250,12 @@ class _ChatPageState extends State<ChatPage> {
     ).showSnackBar(SnackBar(content: Text("打電話功能尚未實作")));
   }
 
+  void _onVideoCallPressed() {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("視訊功能尚未實作")));
+  }
+
   void _onReturnPressed() {
     SelfUser.closeConnection();
     Navigator.pop(context);
@@ -236,9 +270,61 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _onVideoCallPressed() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("視訊功能尚未實作")));
+  void _showImageOptions(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder:
+          (_) => CupertinoActionSheet(
+            title: Text('選擇圖片來源'),
+            actions: [
+              CupertinoActionSheetAction(
+                child: Text('從相簿選擇'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Text('使用相機'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+            cancelButton: CupertinoActionSheetAction(
+              child: Text('取消'),
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source);
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+
+      // 這裡你可以選擇直接將圖片的路徑傳送出去，或實作上傳邏輯
+      String imagePath = picked.path;
+      // SelfUser.sendMessage("[圖片] $imagePath");
+
+      setState(() {
+        _messages.add("[圖片] $imagePath");
+        _senders.add(SelfUser.userName);
+      });
+
+      Future.delayed(Duration(milliseconds: 100), () {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      });
+    }
   }
 }

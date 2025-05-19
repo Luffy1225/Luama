@@ -9,7 +9,8 @@ class Client {
   Socket? socket; // 用來存儲已連線的 Socket
 
   Function(String message)? onMessageReceived;
-  Function(String message)? onMessageSend;
+
+  // Function(String message)? onMessageSend;
 
   bool _isSocketClosed = true;
   bool get isConnected =>
@@ -72,9 +73,32 @@ class Client {
     }
   }
 
-  // 關閉連線
-  void closeConnection() {
-    socket?.close();
-    print('Connection closed');
+  void sendMessageJSON(String text) {
+    if (socket != null &&
+        socket?.remoteAddress != null &&
+        socket?.remotePort != null) {
+      // 檢查是否已經建立連線
+      socket?.write(text);
+      socket?.flush();
+    } else {
+      print('No active connection. Please connect to the server first.');
+    }
+  }
+
+  // // 關閉連線
+  // void closeConnection() {
+  //   socket?.close();
+  //   print('Connection closed');
+  // }
+
+  Future<void> closeConnection() async {
+    if (socket != null && !_isSocketClosed) {
+      await socket?.close();
+      _isSocketClosed = true;
+      socket = null;
+      print('Connection closed');
+    } else {
+      print('No active connection to close.');
+    }
   }
 }

@@ -10,6 +10,19 @@ void main() {
   runApp(Luama());
 }
 
+TUser taruser = TUser(
+  userId: "0000",
+  userName: "AI_Agent",
+  profileImage: "",
+  email: "",
+);
+TUser selfuser = TUser(
+  userId: "0002",
+  userName: "Luffy",
+  profileImage: "",
+  email: "",
+);
+
 class Luama extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,6 +30,7 @@ class Luama extends StatelessWidget {
       title: 'Luama',
       debugShowCheckedModeBanner: false,
       home: Homepage(),
+      // home: ChatPage(selfuser, taruser),
     );
   }
 }

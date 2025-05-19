@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'client.dart';
 import 'server.dart';
+import 'chatmsg.dart';
 
 class TUser {
   //User Information
@@ -60,7 +61,18 @@ class TUser {
   }
 
   // 發送訊息給該用戶
-  void sendMessage(String message) {
+  void sendRawMessage(String message) {
+    if (client.isConnected) {
+      client.sendMessage(message);
+    } else {
+      client.connectToServer();
+      client.sendMessage(message);
+    }
+  }
+
+  void sendMessage(ChatMsg chatmsg) {
+    String message = ChatMsg2String(chatmsg);
+
     if (client.isConnected) {
       client.sendMessage(message);
     } else {
@@ -95,7 +107,12 @@ class TUser {
     client.connectToServer(ip_: ip, port_: int.tryParse(port));
   }
 
-  // User 對外提供一個 onMessageReceived
+  // // User 對外提供一個 onMessageReceived
+  // set onMessageReceived(Function(String message)? handler) {
+  //   client.onMessageReceived = handler;
+  // }
+
+  // JSON Version
   set onMessageReceived(Function(String message)? handler) {
     client.onMessageReceived = handler;
   }
