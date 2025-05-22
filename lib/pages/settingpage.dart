@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../util/user.dart';
 
 class SettingPage extends StatefulWidget {
-  final TUser user; // <== 新增這一行
+  final TUser user;
 
   const SettingPage({required this.user}); // <== 新增 constructor 傳入
 

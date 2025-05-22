@@ -5,12 +5,9 @@ class Client {
   String ip;
   int port;
   String userName;
-  // late Socket socket; // 用來存儲已連線的 Socket
   Socket? socket; // 用來存儲已連線的 Socket
 
   Function(String message)? onMessageReceived;
-
-  // Function(String message)? onMessageSend;
 
   bool _isSocketClosed = true;
   bool get isConnected =>

@@ -3,12 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:luama/main.dart';
 
 import '../util/app_colors.dart';
 import '../util/user.dart';
 import '../util/Page_animation.dart';
 import '../util/chatmsg.dart';
+import '../util/STTAndTTSManager.dart';
+
 import 'settingpage.dart';
+import 'VoiceInterfacePage.dart';
+import 'VoiceInterfacePage.dart';
 
 class ChatPage extends StatefulWidget {
   final TUser selfUser;
@@ -25,12 +30,15 @@ class _ChatPageState extends State<ChatPage> {
   late TUser TargetUser;
 
   bool is_fileExisted = false;
+  bool _isRecording = false; // 是否正在錄音
 
-  final List<ChatMsg> _JSON_messages = [];
+  final List<ChatMsg> _JSON_ChatHistory = [];
   final List<String> _messages = [];
   final List<String> _senders = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  late Function(String)? originalOnMessageReceived; //
 
   File? _selectedImage; // 加入圖片選擇變數
 
@@ -40,9 +48,13 @@ class _ChatPageState extends State<ChatPage> {
     SelfUser = widget.selfUser;
     TargetUser = widget.targetUser;
 
+    _controller.addListener(() {
+      setState(() {}); // 輸入框框有值 觸發 UI 更新
+    });
+
     SelfUser.startClient();
 
-    SelfUser.onMessageReceived = (messageString) {
+    originalOnMessageReceived = (messageString) {
       try {
         // 將 JSON 字串轉換成 ChatMessage 物件
         final jsonData = jsonDecode(messageString);
@@ -52,9 +64,7 @@ class _ChatPageState extends State<ChatPage> {
 
         // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
         setState(() {
-          _JSON_messages.add(chatmsg);
-          // _messages.add(message.content);
-          // _senders.add(message.sender);
+          _JSON_ChatHistory.add(chatmsg);
         });
 
         Future.delayed(Duration(milliseconds: 100), () {
@@ -68,6 +78,8 @@ class _ChatPageState extends State<ChatPage> {
         print("JSON parsing error: $e");
       }
     };
+
+    SelfUser.onMessageReceived = originalOnMessageReceived;
   }
 
   @override
@@ -104,14 +116,11 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-
-              // itemCount: _messages.length,
-              itemCount: _JSON_messages.length,
+              itemCount: _JSON_ChatHistory.length,
 
               itemBuilder: (context, index) {
-                // final isMe = _senders[index] == SelfUser.userName;
-
-                final isMe = _JSON_messages[index].sender == SelfUser.userName;
+                final isMe =
+                    _JSON_ChatHistory[index].sender == SelfUser.userName;
 
                 return Align(
                   alignment:
@@ -147,7 +156,7 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                           child: Text(
                             // _messages[index],
-                            _JSON_messages[index].content,
+                            _JSON_ChatHistory[index].content,
 
                             style: TextStyle(
                               color: isMe ? Colors.white : Colors.black,
@@ -194,12 +203,22 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 SizedBox(width: 8),
-                Container(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _sendMessage,
-                    child: Icon(Icons.send_rounded),
-                  ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _controller,
+                  builder: (context, value, child) {
+                    final hasText = value.text.trim().isNotEmpty;
+                    return Container(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: hasText ? _sendMessage : OpenSSTandTTSpage,
+                        child: Icon(
+                          hasText
+                              ? Icons.send_rounded
+                              : (_isRecording ? Icons.pause : Icons.mic),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -220,16 +239,13 @@ class _ChatPageState extends State<ChatPage> {
       timestamp: GetTimeStamp(),
     );
 
-    // SelfUser.sendMessage(text);
     SelfUser.sendMessage(message);
 
     setState(() {
-      // _messages.add(text);
-      // _senders.add(SelfUser.userName);
+      _JSON_ChatHistory.add(message);
 
-      _JSON_messages.add(message);
-      for (int i = 0; i < _JSON_messages.length; i++) {
-        print(ChatMsg2String(_JSON_messages[i]));
+      for (int i = 0; i < _JSON_ChatHistory.length; i++) {
+        print(ChatMsg2String(_JSON_ChatHistory[i]));
       }
     });
 
@@ -326,5 +342,19 @@ class _ChatPageState extends State<ChatPage> {
         );
       });
     }
+  }
+
+  void OpenSSTandTTSpage() {
+    Navigator.of(context)
+        .push(
+          createRoute(
+            VoiceInterfacePage(SelfUser, TargetUser, _JSON_ChatHistory),
+            Anima_Direction.FromRightIn,
+          ),
+        )
+        .then((_) {
+          SelfUser.onMessageReceived = originalOnMessageReceived;
+          setState(() {});
+        });
   }
 }

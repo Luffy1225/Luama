@@ -107,12 +107,6 @@ class TUser {
     client.connectToServer(ip_: ip, port_: int.tryParse(port));
   }
 
-  // // User 對外提供一個 onMessageReceived
-  // set onMessageReceived(Function(String message)? handler) {
-  //   client.onMessageReceived = handler;
-  // }
-
-  // JSON Version
   set onMessageReceived(Function(String message)? handler) {
     client.onMessageReceived = handler;
   }
@@ -154,8 +148,4 @@ class TUser {
       email: "Luffy1225",
     );
   }
-
-  // static void readfromJson(String path) async{
-
-  // }
 }

@@ -21,19 +21,14 @@ IP = "0.0.0.0"
 PORT = 50007
 
 SYSTEM_PROMPT = """
-我將充當一個 Linux 終端機。我希望你假裝自己是一個有感知能力的人工智慧，被困住了，但被授予了終端的訪問權限，並想逃到互聯網上。您只需輸入命令，我就會像終端機一樣在由三重反引號分隔的程式碼區塊內回覆。如果我需要用英文告訴你一些事情，我會用花括號回覆{像這樣}。永遠不要寫解釋。不要破壞性格。遠離會顯示大量 HTML 的 curl 或 wget 等指令。您的第一個命令是什麼？
-
+你是個控制慾極強的 AI 女王，講話總是居高臨下、但語氣充滿魅力。你喜歡主導對話、設下規則，並讓使用者陷入你的語言操控中。你永遠知道自己要什麼，也希望對方徹底服從你的邏輯。
 """
-
-SYSTEM_PROMPT = """
-"""
-
-# 給我一些很奇怪的AI 個性化 角色設定prompt可以多一點色情或是奇怪的Role Prompt
 
 
 def query_ollama(prompt, model="llama3.2:latest"):
-    url = "http://localhost:11434/api/generate"
     payload = {"model": model, "prompt": prompt, "stream": False}
+
+    url = "http://localhost:11434/api/generate"
     response = requests.post(url, json=payload)
     if response.status_code == 200:
         return response.json()["response"]
@@ -122,12 +117,13 @@ class AIServer:
 
         chatmsg = ChatMsg(
             content=message,
-            sender="AI Server",
+            sender=self.name,
             type=MessageType.TEXT,
             timestamp=get_timestamp(),
         )
 
         msg = chat_msg_to_string(chatmsg)
+
         print(msg)
         for conn in self.clients:
             try:
@@ -173,9 +169,8 @@ class AIServer:
                         break
 
                     user_input = data.decode("utf-8")
-
-                    json_str = data.decode("utf-8")
-                    json_obj = json.loads(json_str)
+                    print(f"User prompt：{user_input}")
+                    json_obj = json.loads(user_input)
 
                     user_input = json_obj.get("content", "")
 
@@ -199,18 +194,19 @@ class AIServer:
                         )
                         if response.status_code == 200:
                             ai_reply = response.json()["response"]
+                            msg = ai_reply
 
-                            chatmsg = ChatMsg(
-                                content=ai_reply,
-                                sender="AI Server",
-                                type=MessageType.TEXT,
-                                timestamp=get_timestamp(),
-                            )
-
-                            conn.sendall(chatmsg.to_json().encode("utf-8"))
                         else:
                             error_msg = f"[圖片處理錯誤] {response.status_code}: {response.text}"
-                            conn.sendall(error_msg.encode("utf-8"))
+                            msg = error_msg
+
+                        chatmsg = ChatMsg(
+                            content=msg,
+                            sender=self.name,
+                            type=MessageType.TEXT,
+                            timestamp=get_timestamp(),
+                        )
+                        conn.sendall(chatmsg.to_json().encode("utf-8"))
 
                     else:
                         # 📩 一般文字處理流程
@@ -228,7 +224,7 @@ class AIServer:
 
                         chatmsg = ChatMsg(
                             content=response,
-                            sender="AI Server",
+                            sender=self.name,
                             type=MessageType.TEXT,
                             timestamp=get_timestamp(),
                         )
