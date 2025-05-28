@@ -67,7 +67,8 @@ class STTAndTTSManager {
     await _speech.listen(
       onResult: (result) {
         _recognizedText = result.recognizedWords;
-        if (_onResultExternal != null) {
+        // 只有在最終結果才觸發 callback
+        if (result.finalResult && _onResultExternal != null) {
           _onResultExternal!(_recognizedText);
         }
       },

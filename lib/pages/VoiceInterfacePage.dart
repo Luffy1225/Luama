@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:luama/main.dart';
+import 'package:luama/OLDmain.dart';
 import 'dart:convert';
 
 import '../util/STTAndTTSManager.dart';
@@ -57,7 +57,8 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
       });
 
       ChatMsg chatmsg = ChatMsg(
-        sender: selfuser.userName,
+        sender: SelfUser.userName,
+        receiver: TargetUser.userName,
         type: MessageType.text,
         content: _ShowText,
         timestamp: GetTimeStamp(),
@@ -159,6 +160,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                 child: IconButton(
                   icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () {
+                    sttTtsManager.stopListening();
                     Navigator.pop(context);
                   },
                 ),
@@ -228,6 +230,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
   void dispose() {
     sttTtsManager.setOnStatusCallback(null);
     sttTtsManager.setOnResultCallback(null);
+    sttTtsManager.stopListening();
     super.dispose();
   }
 }

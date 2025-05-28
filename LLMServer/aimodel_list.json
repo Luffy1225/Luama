@@ -1,0 +1,8 @@
+[
+  {
+    "name": "deepseek-r1:7b"
+  },
+  {
+    "name": "llama3.2:latest"
+  }
+]

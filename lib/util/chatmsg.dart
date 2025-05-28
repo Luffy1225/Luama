@@ -29,12 +29,14 @@ String ChatMsg2String(ChatMsg msg) {
 
 class ChatMsg {
   final String sender;
+  final String receiver;
   final MessageType type; // text / image / file 等
   final String content;
   final String timestamp;
 
   ChatMsg({
     required this.sender,
+    required this.receiver,
     required this.type,
     required this.content,
     required this.timestamp,
@@ -44,6 +46,7 @@ class ChatMsg {
   Map<String, dynamic> toJson() {
     return {
       'sender': sender,
+      'receiver': receiver,
       'type': type.name,
       'content': content,
       'timestamp': timestamp,
@@ -53,6 +56,7 @@ class ChatMsg {
   factory ChatMsg.fromJson(Map<String, dynamic> json) {
     return ChatMsg(
       sender: json['sender'],
+      receiver: json['receiver'],
       type: MessageType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => MessageType.text,

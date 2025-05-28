@@ -17,7 +17,9 @@ class TUser {
   String email; // 使用者電子郵件
   bool isOnline = false; // 使用者是否在線上
 
-  IconData icon = Icons.person;
+  bool isAIAgent = false;
+
+  IconData iconData = Icons.person;
 
   late Server server;
   late Client client;
@@ -36,8 +38,10 @@ class TUser {
     required this.userName,
     required this.profileImage,
     required this.email,
-    IconData? icon, // 可選的 icon 參數
-  }) : icon = icon ?? Icons.person {
+    IconData? iconData, // 可選的 icon 參數
+    bool? isAIAgent,
+  }) : iconData = iconData ?? Icons.person,
+       isAIAgent = isAIAgent ?? false {
     server = Server(ip: DEFAULT_IP, port: DEFAULT_PORT, userName: userName);
     client = Client(ip: DEFAULT_IP, port: DEFAULT_PORT, userName: userName);
 
@@ -92,7 +96,6 @@ class TUser {
   // 關閉與該用戶的 Socket 連線
   void closeConnection() {
     client.closeConnection();
-    // server.closeConnection();
   }
 
   void startServer() {
@@ -140,12 +143,79 @@ class TUser {
     );
   }
 
-  static TUser loadSelfData() {
-    return TUser(
-      userId: "1225",
-      userName: "Luffy",
-      profileImage: "",
-      email: "Luffy1225",
-    );
+  // static TUser loadSelfData() {
+  //   return TUser(
+  //     userId: "1225",
+  //     userName: "Luffy",
+  //     profileImage: "",
+  //     email: "Luffy1225",
+  //   );
+  // }
+}
+
+enum SortRule { by_ID, by_Name, by_Time }
+
+class UserManager {
+  List<TUser> users = [];
+
+  UserManager() {
+    loadSampleUser();
   }
+
+  void loadSampleUser() {
+    users = [
+      TUser(
+        userId: "0000",
+        userName: "llama3.2:latest",
+        profileImage: "",
+        email: "",
+        isAIAgent: true,
+      ),
+      TUser(
+        userId: "0001",
+        userName: "deepseek-r1:7b",
+        profileImage: "",
+        email: "",
+        isAIAgent: true,
+      ),
+      TUser(userId: "0002", userName: "Yuniko", profileImage: "", email: ""),
+      TUser(userId: "0003", userName: "Nami", profileImage: "", email: ""),
+      TUser(userId: "0004", userName: "Usopp", profileImage: "", email: ""),
+      TUser(userId: "0005", userName: "Sanji", profileImage: "", email: ""),
+      TUser(userId: "0006", userName: "Chopper", profileImage: "", email: ""),
+      TUser(userId: "0007", userName: "Robin", profileImage: "", email: ""),
+      TUser(userId: "0008", userName: "Franky", profileImage: "", email: ""),
+      TUser(userId: "0009", userName: "Brook", profileImage: "", email: ""),
+      TUser(userId: "0010", userName: "Jinbe", profileImage: "", email: ""),
+      TUser(userId: "0011", userName: "Vivi", profileImage: "", email: ""),
+      TUser(userId: "0012", userName: "Carrot", profileImage: "", email: ""),
+      TUser(userId: "0013", userName: "Yamato", profileImage: "", email: ""),
+      TUser(userId: "0014", userName: "Bonney", profileImage: "", email: ""),
+      TUser(userId: "0015", userName: "Hancock", profileImage: "", email: ""),
+    ];
+  }
+
+  void addUser(TUser user) {
+    users.add(user);
+  }
+
+  void sortBy(SortRule rule) {
+    switch (rule) {
+      case SortRule.by_ID:
+        users.sort((a, b) => a.userId.compareTo(b.userId));
+        break;
+      case SortRule.by_Name:
+        users.sort((a, b) => a.userName.compareTo(b.userName));
+        break;
+      case SortRule.by_Time:
+        // Implement sorting by time if TUser has a time property
+        break;
+    }
+  }
+
+  TUser getUserbyIndex(int index) {
+    return users[index];
+  }
+
+  int get length => users.length;
 }

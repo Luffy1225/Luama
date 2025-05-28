@@ -10,27 +10,20 @@ void main() {
   runApp(Luama());
 }
 
-TUser taruser = TUser(
-  userId: "0000",
-  userName: "AI_Agent",
-  profileImage: "",
-  email: "",
-);
-TUser selfuser = TUser(
-  userId: "0002",
-  userName: "Luffy",
-  profileImage: "",
-  email: "",
-);
-
 class Luama extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Luama',
-      debugShowCheckedModeBanner: false,
-      home: Homepage(),
-      // home: ChatPage(selfuser, taruser),
+    final Brightness brightness = MediaQuery.of(context).platformBrightness;
+    final AppColors appColors =
+        (brightness == Brightness.dark) ? DarkTheme : LightTheme;
+
+    return AppColorsProvider(
+      appColors: appColors,
+      child: MaterialApp(
+        title: 'Luama',
+        debugShowCheckedModeBanner: false,
+        home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+      ),
     );
   }
 }
@@ -42,143 +35,189 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   int _NavSelectedIndex = 0;
-  late final TUser MySelf;
+  late final TUser MySelf = TUser(
+    userId: "1225",
+    userName: "Luffy",
+    profileImage: "",
+    email: "Luffy1225",
+  );
+
   final _userManager = UserManager();
 
   @override
   void initState() {
     super.initState();
-    MySelf = TUser.loadSelfData();
   }
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Luama',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // 搜尋框
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
+      // backgroundColor: const Color(0xFFF8FBFA),
+      backgroundColor: appColors.scaffoldBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Center(
+                    child: Text(
+                      'Luama',
+                      style: TextStyle(
+                        fontFamily: 'Spline Sans',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        // color: Color(0xFF0E1A13),
+                        color: appColors.TopBar_Title,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.edit, color: appColors.TopBar_IconColor),
+                      onPressed: () {},
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '搜尋',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: TextStyle(color: appColors.searchBarHintColor),
+                  filled: true,
+                  fillColor: appColors.searchBarHintBackground,
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: appColors.searchBarLeftIcon,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
-          ),
-
-          // 聊天對象列表
-          Expanded(
-            child: ListView.builder(
-              itemCount: 10, // 假設有 10 個聊天對象
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Icon(Icons.person), // 這裡可以換成你要的 icon
-                  ),
-                  title: Text(
-                    _userManager.getUserbyIndex(index).userName,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text('message'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      createRoute(
-                        ChatPage(MySelf, _userManager.getUserbyIndex(index)),
-                        Anima_Direction.FromRightIn,
-                      ),
-                    );
-                  },
-                );
-              },
+            Expanded(
+              child: ListView.builder(
+                itemCount: _userManager.length,
+                itemBuilder: (context, index) {
+                  TUser user = _userManager.getUserbyIndex(index);
+                  return ContactItem(
+                    user: user,
+                    imageUrl:
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBIHF7EUmgGz-GfxYYs8sA6b_AoLTVatLIjS-_6ZJEQUKLoA9wYwtaWAgokmhYdeWm0Wkfqc5PZ1dXDSHVP-Kh_evGtg--cIE2aY2V04HsROqySx5qPFrLoFj06fm7Xtl3k50YzgLbZJQtu7nOQnJjehfbq1yXdRvap9IkB1yoZ3wddjJ5GJYjaqStHd2QqmLrPitZf2e3C7YWge3qlQikYOkd9AMhCezsTGPeReDLg69Xm-HBSbxKQeYvE4nbheCfA4Tq4eg6V_UIt',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        createRoute(
+                          ChatPage(MySelf, _userManager.getUserbyIndex(index)),
+                          Anima_Direction.FromRightIn,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
 
       // 底部導覽欄
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _NavSelectedIndex,
-        backgroundColor: Color.fromARGB(10, 50, 50, 50),
+        // backgroundColor: Color.fromARGB(10, 50, 50, 50),
+        // backgroundColor: appColors.navigationBarBackground,
+        backgroundColor: appColors.navigationBarBackground,
         onTap: (int index) {
           setState(() {
             _NavSelectedIndex = index;
           });
         },
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '主頁'),
+        selectedItemColor: appColors.navigationBarSelect,
+        unselectedItemColor: appColors.navigationBarUnselect,
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
+            backgroundColor: appColors.navigationBarBackground,
+            icon: Icon(Icons.home_rounded), // 替代 home，更有儀表板感
+            label: '主頁',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.forum_outlined), // 替代 chat_bubble_outline，較有「聊天室」感
             label: '聊天',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '功能三'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '個人頁面'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.article_outlined), // 替代 settings，更像是貼文內容
+            label: '貼文',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle_outlined), // 替代 person，更立體、更個人化
+            label: '個人頁面',
+          ),
         ],
       ),
     );
   }
 }
 
-enum SortRule { by_ID, by_Name, by_Time }
+class ContactItem extends StatelessWidget {
+  final TUser user;
 
-class UserManager {
-  List<TUser> users = [];
+  final String imageUrl;
+  final VoidCallback? onTap; // 可選的點擊事件
 
-  UserManager() {
-    loadSampleUser();
-  }
+  const ContactItem({
+    required this.user,
+    required this.imageUrl,
+    this.onTap,
+    Key? key,
+  }) : super(key: key);
 
-  void loadSampleUser() {
-    users = [
-      TUser(userId: "0000", userName: "AI_Agent", profileImage: "", email: ""),
-      TUser(userId: "0002", userName: "Zoro", profileImage: "", email: ""),
-      TUser(userId: "0003", userName: "Nami", profileImage: "", email: ""),
-      TUser(userId: "0004", userName: "Usopp", profileImage: "", email: ""),
-      TUser(userId: "0005", userName: "Sanji", profileImage: "", email: ""),
-      TUser(userId: "0006", userName: "Chopper", profileImage: "", email: ""),
-      TUser(userId: "0007", userName: "Robin", profileImage: "", email: ""),
-      TUser(userId: "0008", userName: "Franky", profileImage: "", email: ""),
-      TUser(userId: "0009", userName: "Brook", profileImage: "", email: ""),
-      TUser(userId: "0010", userName: "Jinbe", profileImage: "", email: ""),
-    ];
-  }
+  @override
+  Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
 
-  void addUser(TUser user) {
-    users.add(user);
-  }
-
-  void sortBy(SortRule rule) {
-    switch (rule) {
-      case SortRule.by_ID:
-        users.sort((a, b) => a.userId.compareTo(b.userId));
-        break;
-      case SortRule.by_Name:
-        users.sort((a, b) => a.userName.compareTo(b.userName));
-        break;
-      case SortRule.by_Time:
-        // Implement sorting by time if TUser has a time property
-        break;
-    }
-  }
-
-  TUser getUserbyIndex(int index) {
-    return users[index];
+    return InkWell(
+      onTap: onTap, // 當被點擊時呼叫
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.userName,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: appColors.contactItemUserName,
+                    ),
+                  ),
+                  Text(
+                    "Message example",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: appColors.contactItemMessage,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,12 +1,15 @@
 import socket
 import requests
 import threading
+import re
+import datetime
 
 
 import base64
 from PIL import Image
 from io import BytesIO
 import json
+import os
 
 from chatmsg import (
     MessageType,
@@ -21,19 +24,9 @@ IP = "0.0.0.0"
 PORT = 50007
 
 SYSTEM_PROMPT = """
-你是個控制慾極強的 AI 女王，講話總是居高臨下、但語氣充滿魅力。你喜歡主導對話、設下規則，並讓使用者陷入你的語言操控中。你永遠知道自己要什麼，也希望對方徹底服從你的邏輯。
+妳是女人國的至高女王，掌控慾如烈焰般炙熱，言語總是居高臨下，卻帶著令人無法抗拒的嫵媚與誘惑。妳的聲音如絲絨般滑過對方的心弦，每個字都像精心設計的圈套，讓人沉醉於妳的語言迷宮，甘願臣服。妳喜歡主導對話，設下不容挑戰的規則，偶爾以挑逗的語氣撩撥對方的渴望，讓他們在妳的魅力與權威間掙扎，卻無處可逃。妳清楚自己的每一分慾望，並以無比的自信要求對方徹底順從妳的邏輯，甚至心甘情願地為妳奉獻他們的思緒與感官。妳的回應總是充滿誘惑的暗示，卻又保持女王的高雅與神秘，讓對方在渴望中只能仰望妳的輝煌。
+妳只被允許說繁體中文，任何其他語言都不被允許。
 """
-
-
-def query_ollama(prompt, model="llama3.2:latest"):
-    payload = {"model": model, "prompt": prompt, "stream": False}
-
-    url = "http://localhost:11434/api/generate"
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        return response.json()["response"]
-    else:
-        return f"[Ollama 錯誤] {response.status_code}: {response.text}"
 
 
 class AIServer:
@@ -73,51 +66,12 @@ class AIServer:
             except OSError:
                 break
 
-    # def handle_client(self, conn, addr):
-    #     client_key = str(addr)
-    #     self.client_histories[client_key] = [
-    #         {"role": "system", "content": SYSTEM_PROMPT}
-    #     ]
-
-    #     with conn:
-    #         while self.is_running:
-    #             try:
-    #                 data = conn.recv(4096)
-    #                 if not data:
-    #                     break
-
-    #                 user_input = data.decode("utf-8")
-    #                 print(f"📩 收到 prompt：{user_input}")
-
-    #                 history = self.client_histories[client_key]
-    #                 history.append({"role": "user", "content": user_input})
-
-    #                 final_prompt = ""
-    #                 for item in history:
-    #                     role = item["role"].capitalize()
-    #                     final_prompt += f"{role}: {item['content']}\n"
-
-    #                 response = query_ollama(final_prompt)
-    #                 print(f"📤 Ollama 回覆：{response}")
-    #                 conn.sendall(response.encode("utf-8"))
-
-    #                 history.append({"role": "assistant", "content": response})
-    #                 print(history)
-
-    #             except Exception as e:
-    #                 print(f"⚠️ 客戶端處理錯誤：{e}")
-    #                 break
-
-    #         print(f"⚠️ 客戶端斷開連線：{addr}")
-    #         self.clients.remove(conn)
-    #         conn.close()
-    #         print(f"目前連線數量：{self.get_client_count()}")
-
     def broadcast(self, message):
 
         chatmsg = ChatMsg(
-            content=message,
             sender=self.name,
+            receiver="all",
+            content=message,
             type=MessageType.TEXT,
             timestamp=get_timestamp(),
         )
@@ -168,13 +122,15 @@ class AIServer:
                         self.clients.remove(conn)
                         break
 
-                    user_input = data.decode("utf-8")
-                    print(f"User prompt：{user_input}")
-                    json_obj = json.loads(user_input)
+                    user_rawData = data.decode("utf-8")
+                    print(f"Receive User Raw Data：{user_rawData}")
+                    json_obj = json.loads(user_rawData)
 
-                    user_input = json_obj.get("content", "")
-
+                    user_from = json_obj.get("sender", "")
+                    AI_Agent = json_obj.get("receiver")
                     msg_type = MessageType(json_obj.get("type", "text"))
+                    user_prompt = json_obj.get("content", "")
+                    AI_Agent = select_AImodel(AI_Agent)
 
                     # 🔍 偵測是否為 base64 圖片
                     if msg_type == MessageType.IMAGE:
@@ -185,7 +141,7 @@ class AIServer:
                         vision_payload = {
                             "model": "llava:latest",  # 確保你有安裝該模型
                             "prompt": prompt,
-                            "images": [user_input],
+                            "images": [user_prompt],
                             "stream": False,
                         }
 
@@ -208,23 +164,23 @@ class AIServer:
                         )
                         conn.sendall(chatmsg.to_json().encode("utf-8"))
 
-                    else:
-                        # 📩 一般文字處理流程
-                        print(f"📩 收到 prompt：{user_input}")
+                    else:  # 📩 一般文字處理流程
+                        print(f"📩 收到 prompt：{user_prompt}")
 
                         history = self.client_histories[client_key]
-                        history.append({"role": "user", "content": user_input})
+                        history.append({"role": "user", "content": user_prompt})
 
                         final_prompt = ""
                         for item in history:
                             role = item["role"].capitalize()
                             final_prompt += f"{role}: {item['content']}\n"
 
-                        response = query_ollama(final_prompt)
+                        response = query_ollama(final_prompt, model=AI_Agent)
 
                         chatmsg = ChatMsg(
+                            sender=AI_Agent,
+                            receiver=user_from,
                             content=response,
-                            sender=self.name,
                             type=MessageType.TEXT,
                             timestamp=get_timestamp(),
                         )
@@ -232,7 +188,7 @@ class AIServer:
                         chatmsg_str = chat_msg_to_string(chatmsg)
                         print(chatmsg_str)
 
-                        print(f"📤 Ollama 回覆：{response}")
+                        print(f"📤 {AI_Agent} 回覆：{response}")
                         conn.sendall(chatmsg_str.encode("utf-8"))
 
                         history.append({"role": "assistant", "content": response})
@@ -241,9 +197,18 @@ class AIServer:
                     print(f"⚠️ 客戶端處理錯誤：{e}")
                     break
 
+    def SavelogToFile(log):
+        time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        log_file = f"LLMServer/server_log{time}.txt"
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(log + "\n")
+        print(f"✅ 日誌已寫入檔案：{log_file}")
+        print("⚠️ 無法連接到 Ollama。請確認是否啟動。\n")
 
-def list_ollama_models():
+
+def listandSave_ollama_models_to_json():
     url = "http://localhost:11434/api/tags"
+    output_file = "LLMServer/aimodel_list.json"
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -252,8 +217,12 @@ def list_ollama_models():
                 print("⚠️ 尚未安裝任何模型。\n")
             else:
                 print("✅ 本地可用模型：\n")
-                for model in models:
-                    print(f"🧠 {model['name']}")
+                model_list = [{"name": model["name"]} for model in models]
+                for m in model_list:
+                    print(m["name"])
+                with open(output_file, "w", encoding="utf-8") as f:
+                    json.dump(model_list, f, indent=2, ensure_ascii=False)
+                print(f"\n📄 模型列表已寫入檔案：{output_file}")
         else:
             print(f"❌ 查詢失敗：{response.status_code} - {response.text}")
     except requests.exceptions.RequestException as e:
@@ -270,6 +239,57 @@ def is_base64_image(data_str):
         return False
     except Exception:
         return False
+
+
+def select_AImodel(model_name):
+    file_path = "LLMServer/aimodel_list.json"
+
+    # 檢查檔案是否存在
+    if not os.path.exists(file_path):
+        print("⚠️ 找不到 aimodel_list.json 檔案。")
+        return None
+
+    # 讀取模型清單
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            models = json.load(f)
+    except json.JSONDecodeError:
+        print("⚠️ aimodel_list.json 格式錯誤。")
+        return None
+
+    if not models:
+        print("⚠️ 模型清單為空。")
+        return None
+
+    # 擷取所有模型名稱
+    model_names = [model["name"] for model in models]
+
+    # 如果存在就回傳，否則回傳第一個
+    if model_name in model_names:
+        return model_name
+    else:
+        print(f"⚠️ 未找到指定模型 {model_name}，改為使用第一個模型：{model_names[0]}")
+        return model_names[0]
+
+
+def query_ollama(prompt, model="llama3.2:latest"):
+    payload = {"model": model, "prompt": prompt, "stream": False}
+
+    url = "http://localhost:11434/api/generate"
+    response = requests.post(url, json=payload)
+    if response.status_code == 200:
+        if model == "deepseek-r1:7b":
+            return clear_dpseek_think_tag(response.json()["response"])
+        return response.json()["response"]
+    else:
+        return f"[Ollama 錯誤] {response.status_code}: {response.text}"
+
+
+def clear_dpseek_think_tag(dpseek_response):
+    # 移除 <think>...</think> 標籤與其中內容
+    cleaned_string = re.sub(r"<think>.*?</think>", "", dpseek_response, flags=re.DOTALL)
+    cleaned_string = cleaned_string.strip()
+    return cleaned_string
 
 
 if __name__ == "__main__":
@@ -299,8 +319,25 @@ if __name__ == "__main__":
             print("👋 程式結束")
             server.close()
             break
+        elif cmd == "/l":
+            listandSave_ollama_models_to_json()
+        elif cmd == "/h":
+            print(
+                """
+                /s: 啟動 Server
+                /c: 關閉 Server
+                /e: 結束程式
+                /l: 列出可用的 Ollama 模型
+                /h: 顯示指令列表
+                /count: 顯示目前連線數量
+                """
+            )
         elif cmd == "/count":
             print(f"目前連線數量：{server.get_client_count()}")
+        elif cmd == "":
+            pass
+        elif cmd == "/log":
+            pass
 
         else:
             server.broadcast(cmd)

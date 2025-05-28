@@ -32,11 +32,13 @@ class ChatMsg:
     def __init__(
         self,
         sender: str,
+        receiver: str,
         content: str,
         timestamp: str,
         type: MessageType = MessageType.TEXT,
     ):
         self.sender = sender
+        self.receiver = receiver
         self.type = type
         self.content = content
         self.timestamp = timestamp
@@ -44,6 +46,7 @@ class ChatMsg:
     def to_json(self) -> dict:
         return {
             "sender": self.sender,
+            "receiver": self.receiver,
             "type": self.type.value,
             "content": self.content,
             "timestamp": self.timestamp,
@@ -53,6 +56,7 @@ class ChatMsg:
     def from_json(json_data: dict):
         return ChatMsg(
             sender=json_data["sender"],
+            receiver=json_data["receiver"],
             content=json_data["content"],
             timestamp=json_data["timestamp"],
             type=MessageType(json_data.get("type", "text")),
@@ -65,7 +69,8 @@ def chat_msg_to_string(msg: ChatMsg) -> str:
 
 if __name__ == "__main__":
     msg = ChatMsg(
-        sender="User",
+        sender="Me",
+        receiver="TargetUser",
         content="Hello",
         timestamp=get_timestamp(),
         type=what_msg_type("Hello"),
