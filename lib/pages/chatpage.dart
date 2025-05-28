@@ -134,7 +134,10 @@ class _ChatPageState extends State<ChatPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: appColors.TopBar_IconColor,
+                    ),
                     tooltip: '返回',
                     onPressed: _onReturnPressed,
                   ),
@@ -152,7 +155,10 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.settings),
+                    icon: Icon(
+                      Icons.settings,
+                      color: appColors.TopBar_IconColor,
+                    ),
                     tooltip: '設定',
                     onPressed: _onSettingsPressed,
                   ),
@@ -195,24 +201,27 @@ class _ChatPageState extends State<ChatPage> {
 
             // 輸入框區域
             Container(
-              color: const Color(0xFFF1F4F2),
+              color: appColors.inputAreaBackground,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: appColors.,
+                        color: appColors.TextBox_Background,
                         borderRadius: BorderRadius.circular(50),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
                         controller: _controller,
-                        decoration:  InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Message...',
-                          hintStyle: TextStyle(color: appColors.searchBarHintColor),
+                          hintStyle: TextStyle(
+                            color: appColors.TextBoxHint_Background,
+                          ),
                           border: InputBorder.none,
                         ),
+                        style: TextStyle(color: appColors.PrimaryText),
                       ),
                     ),
                   ),

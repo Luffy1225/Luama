@@ -92,7 +92,10 @@ class _HomepageState extends State<Homepage> {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Search',
-                  hintStyle: TextStyle(color: appColors.searchBarHintColor),
+                  hintStyle: TextStyle(
+                    color: appColors.searchBarHintColor,
+                    fontSize: 18,
+                  ),
                   filled: true,
                   fillColor: appColors.searchBarHintBackground,
                   prefixIcon: Icon(
@@ -134,8 +137,6 @@ class _HomepageState extends State<Homepage> {
       // 底部導覽欄
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _NavSelectedIndex,
-        // backgroundColor: Color.fromARGB(10, 50, 50, 50),
-        // backgroundColor: appColors.navigationBarBackground,
         backgroundColor: appColors.navigationBarBackground,
         onTap: (int index) {
           setState(() {
@@ -151,14 +152,17 @@ class _HomepageState extends State<Homepage> {
             label: '主頁',
           ),
           BottomNavigationBarItem(
+            backgroundColor: appColors.navigationBarBackground,
             icon: Icon(Icons.forum_outlined), // 替代 chat_bubble_outline，較有「聊天室」感
             label: '聊天',
           ),
           BottomNavigationBarItem(
+            backgroundColor: appColors.navigationBarBackground,
             icon: Icon(Icons.article_outlined), // 替代 settings，更像是貼文內容
             label: '貼文',
           ),
           BottomNavigationBarItem(
+            backgroundColor: appColors.navigationBarBackground,
             icon: Icon(Icons.account_circle_outlined), // 替代 person，更立體、更個人化
             label: '個人頁面',
           ),

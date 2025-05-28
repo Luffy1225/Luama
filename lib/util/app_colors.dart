@@ -53,6 +53,7 @@ class AppColors {
 
   final Color inputAreaBackground;
   final Color TextBox_Background;
+  final Color TextBoxHint_Background;
 
   final Color sendButtonBackground;
   final Color sendButtonIconColor;
@@ -90,6 +91,7 @@ class AppColors {
     Color? chatBubbleReceiver_TextColor,
     Color? inputAreaBackground,
     Color? TextBox_Background,
+    Color? TextBoxHint_Background,
     Color? sendButtonBackground,
     Color? sendButtonIconColor,
     Color? SettingTextColor,
@@ -122,6 +124,8 @@ class AppColors {
            chatBubbleReceiver_TextColor ?? const Color(0xFF121714),
        inputAreaBackground = inputAreaBackground ?? const Color(0xFFF1F4F2),
        TextBox_Background = TextBox_Background ?? const Color(0xFFFFFFFF),
+       TextBoxHint_Background =
+           TextBoxHint_Background ?? const Color(0xff9cbfa8),
        sendButtonBackground = sendButtonBackground ?? const Color(0xFF121714),
        sendButtonIconColor = sendButtonIconColor ?? const Color(0xFFFFFFFF),
        SettingTextColor = SettingTextColor ?? const Color(0xFF121714),
@@ -137,7 +141,7 @@ AppColors LightTheme = AppColors(
   Dark: const Color(0xff52946b),
   PrimaryText: const Color(0xff0d1912),
   scaffoldBackground: const Color(0xfff7fafa),
-  TopBar_Title: const Color(0xff52946b),
+  TopBar_Title: const Color(0xff0d1912),
   TopBar_IconColor: const Color(0xff0d1912),
   searchBarHintBackground: const Color(0xffe8f2ed),
   searchBarHintColor: const Color(0xff52946b),
@@ -154,7 +158,8 @@ AppColors LightTheme = AppColors(
   chatBubbleReceiver_BGColor: const Color(0xfff2f5f2),
   chatBubbleReceiver_TextColor: const Color(0xff0d1912),
   inputAreaBackground: const Color(0xfff7fafa),
-  TextBox_Background: const Color(0xfff2f5f2),
+  TextBox_Background: const Color(0xffe8f2ed),
+  TextBoxHint_Background: const Color(0xff52946b),
   sendButtonBackground: const Color(0xFF121714),
   sendButtonIconColor: const Color(0xFFFFFFFF),
   SettingTextColor: const Color(0xff121714),
@@ -173,7 +178,7 @@ AppColors DarkTheme = AppColors(
   TopBar_Title: const Color(0xffffffff),
   TopBar_IconColor: const Color(0xffffffff),
   searchBarHintBackground: const Color(0xff264533),
-  searchBarHintColor: const Color(0xff52946b),
+  searchBarHintColor: const Color(0xff96c4a8),
   searchBarLeftIcon: const Color(0xff96c4a8),
   contactItemUserName: const Color(0xffffffff),
   contactItemMessage: const Color(0xff96c4a8),
@@ -188,6 +193,7 @@ AppColors DarkTheme = AppColors(
   chatBubbleReceiver_TextColor: const Color(0xfff2f5f2),
   inputAreaBackground: const Color(0xff122117),
   TextBox_Background: const Color(0xff294033),
+  TextBoxHint_Background: const Color(0xff9cbfa8),
   sendButtonBackground: const Color(0xFF121714),
   sendButtonIconColor: const Color(0xFFFFFFFF),
   SettingTextColor: const Color(0xffffffff),

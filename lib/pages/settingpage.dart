@@ -110,8 +110,14 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             SwitchListTile(
-              title: Text("開啟通知"),
-              subtitle: Text(_notifications ? "已開啟" : "已關閉"),
+              title: Text(
+                "開啟通知",
+                style: TextStyle(color: appColors.PrimaryText),
+              ),
+              subtitle: Text(
+                _notifications ? "已開啟" : "已關閉",
+                style: TextStyle(color: appColors.PrimaryText),
+              ),
               value: _notifications,
               activeColor: Colors.white,
               activeTrackColor: appColors.switchActiveTrack,
@@ -124,8 +130,14 @@ class _SettingPageState extends State<SettingPage> {
             ),
 
             SwitchListTile(
-              title: Text("深色模式"),
-              subtitle: Text(_darkMode ? "已開啟" : "已關閉"),
+              title: Text(
+                "深色模式",
+                style: TextStyle(color: appColors.PrimaryText),
+              ),
+              subtitle: Text(
+                _darkMode ? "已開啟" : "已關閉",
+                style: TextStyle(color: appColors.PrimaryText),
+              ),
               value: _darkMode,
               activeColor: Colors.white,
               activeTrackColor: appColors.switchActiveTrack,
@@ -170,7 +182,10 @@ class _SettingPageState extends State<SettingPage> {
             Align(
               alignment: Alignment.centerLeft,
               child: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded),
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: appColors.TopBar_IconColor,
+                ),
                 tooltip: '返回',
                 onPressed: () {
                   Navigator.pop(context);
@@ -215,6 +230,7 @@ class _SettingPageState extends State<SettingPage> {
           TextField(
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: appColors.TextBoxHint_Background),
               filled: true,
               fillColor: appColors.TextBox_Background,
               contentPadding: const EdgeInsets.all(16),
