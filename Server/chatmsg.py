@@ -9,6 +9,13 @@ class MessageType(Enum):
     FILE = "file"
     TEXT_AND_FILE = "textAndFile"
     SYSTEM = "system"
+    REQ_NEWS = "request_news"
+
+
+class ServiceType(Enum):
+    AI_REPLY = "ai_reply"
+    REQ_NEWS = "request_news"
+    NONE = "none"
 
 
 def what_msg_type(text: str, image: str = None) -> MessageType:
@@ -35,10 +42,12 @@ class ChatMsg:
         receiver: str,
         content: str,
         timestamp: str,
+        service: ServiceType = ServiceType.NONE,
         type: MessageType = MessageType.TEXT,
     ):
         self.sender = sender
         self.receiver = receiver
+        self.service = service
         self.type = type
         self.content = content
         self.timestamp = timestamp
@@ -47,6 +56,7 @@ class ChatMsg:
         return {
             "sender": self.sender,
             "receiver": self.receiver,
+            "service": self.service.value,
             "type": self.type.value,
             "content": self.content,
             "timestamp": self.timestamp,
@@ -57,9 +67,10 @@ class ChatMsg:
         return ChatMsg(
             sender=json_data["sender"],
             receiver=json_data["receiver"],
+            service=json_data["service"],
+            type=MessageType(json_data.get("type", "text")),
             content=json_data["content"],
             timestamp=json_data["timestamp"],
-            type=MessageType(json_data.get("type", "text")),
         )
 
 

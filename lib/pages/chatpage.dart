@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-// import 'package:luama/OLDmain.dart';
+// import 'package:image_picker/image_picker.dart';
 
 import '../util/app_colors.dart';
 import '../util/user.dart';
@@ -53,7 +52,7 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {}); // 輸入框框有值 觸發 UI 更新
     });
 
-    SelfUser.startClient();
+    // SelfUser.startClient();
 
     originalOnMessageReceived = (messageString) {
       try {
@@ -87,12 +86,18 @@ class _ChatPageState extends State<ChatPage> {
     final text = _controller.text.trim();
     if (text.isEmpty && _selectedImage == null) return;
 
+    ServiceType _service = ServiceType.none;
+    if (TargetUser.isAIAgent) {
+      _service = ServiceType.ai_reply;
+    }
+
     ChatMsg message = ChatMsg(
       sender: SelfUser.userName,
       receiver: TargetUser.userName,
+      service: _service,
       type: whatMsgType(text, _selectedImage),
       content: text,
-      timestamp: GetTimeStamp(),
+      timestamp: GetNowTimeStamp(),
     );
 
     SelfUser.sendMessage(message);
@@ -166,16 +171,16 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
 
-            Text(
-              // 時間
-              'Today 10:30 AM',
-              style: TextStyle(
-                color: appColors.timeTextColor,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Text(
+            //   // 時間
+            //   'Today 10:30 AM',
+            //   style: TextStyle(
+            //     color: appColors.timeTextColor,
+            //     fontSize: 13,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
+            // const SizedBox(height: 16),
 
             // 聊天訊息列表
             Expanded(
@@ -183,18 +188,59 @@ class _ChatPageState extends State<ChatPage> {
                 controller: _scrollController,
                 itemCount: _JSON_ChatHistory.length,
                 padding: const EdgeInsets.all(16),
-
                 itemBuilder: (context, index) {
+                  final currentMsg = _JSON_ChatHistory[index];
+                  final previousMsg =
+                      index > 0 ? _JSON_ChatHistory[index - 1] : null;
+
+                  DateTime currentTime = ParseToDatetime(currentMsg.timestamp);
+                  DateTime? prevTime;
+                  if (previousMsg != null) {
+                    prevTime = ParseToDatetime(previousMsg.timestamp);
+                  }
+
+                  final showTimeLabel =
+                      prevTime == null ||
+                      currentTime.difference(prevTime).inMinutes >= 1 ||
+                      currentTime.day != prevTime.day;
+
                   final isMe =
                       _JSON_ChatHistory[index].sender == SelfUser.userName;
 
-                  return _chatBubble(
-                    appColors: appColors,
-                    chatmsg: _JSON_ChatHistory[index],
-                    isSender: isMe,
-                    avatarUrl:
-                        "https://lh3.googleusercontent.com/aida-public/AB6AXuB0NDoh9uyWemrItrMIqmxBpLwT2RqSv2NtjYhF4D9iDX1J75gULkNDMYjV6JJ-dR7s0xtmnUfPAR1wyWBiaqI2-NyALX6d_Owu5fV45R7gk8X13WZIi58Sv1Yc7LTODGKkbeoUkRNZIYFmaDSKhbqr56TLLtMRLZ8cNoRSxGT9lGeG_FAbKhinM6plhfiuJKqztkSskWeNFBoQbLJQ22wRvdsa3T8kwXpD6gjIOzPzZIbSkxixfBNAo1W7Dr5TsnZ8EJxIOb34Bxzi",
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (showTimeLabel)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: Text(
+                              _formatTimeLabel(currentTime),
+                              style: TextStyle(
+                                color: appColors.timeTextColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      _chatBubble(
+                        appColors: appColors,
+                        chatmsg: currentMsg,
+                        isSender: isMe,
+                        avatarUrl:
+                            "https://lh3.googleusercontent.com/aida-public/AB6AXuB0NDoh9uyWemrItrMIqmxBpLwT2RqSv2NtjYhF4D9iDX1J75gULkNDMYjV6JJ-dR7s0xtmnUfPAR1wyWBiaqI2-NyALX6d_Owu5fV45R7gk8X13WZIi58Sv1Yc7LTODGKkbeoUkRNZIYFmaDSKhbqr56TLLtMRLZ8cNoRSxGT9lGeG_FAbKhinM6plhfiuJKqztkSskWeNFBoQbLJQ22wRvdsa3T8kwXpD6gjIOzPzZIbSkxixfBNAo1W7Dr5TsnZ8EJxIOb34Bxzi",
+                      ),
+                    ],
                   );
+
+                  // return _chatBubble(
+                  //   appColors: appColors,
+                  //   chatmsg: _JSON_ChatHistory[index],
+                  //   isSender: isMe,
+                  //   avatarUrl:
+                  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0NDoh9uyWemrItrMIqmxBpLwT2RqSv2NtjYhF4D9iDX1J75gULkNDMYjV6JJ-dR7s0xtmnUfPAR1wyWBiaqI2-NyALX6d_Owu5fV45R7gk8X13WZIi58Sv1Yc7LTODGKkbeoUkRNZIYFmaDSKhbqr56TLLtMRLZ8cNoRSxGT9lGeG_FAbKhinM6plhfiuJKqztkSskWeNFBoQbLJQ22wRvdsa3T8kwXpD6gjIOzPzZIbSkxixfBNAo1W7Dr5TsnZ8EJxIOb34Bxzi",
+                  // );
                 },
               ),
             ),
@@ -257,14 +303,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _onReturnPressed() {
-    SelfUser.closeConnection();
+    // SelfUser.closeConnection();
     Navigator.pop(context);
   }
 
   void _onSettingsPressed() {
     Navigator.of(context).push(
       createRoute(
-        SettingPage(user: widget.selfUser),
+        SettingPage(SelfUser, TargetUser),
         Anima_Direction.FromRightIn,
       ),
     );
@@ -342,5 +388,26 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
     );
+  }
+
+  String _formatTimeLabel(DateTime timestamp) {
+    final hour = timestamp.hour % 12 == 0 ? 12 : timestamp.hour % 12;
+    final minute = timestamp.minute.toString().padLeft(2, '0');
+    final ampm = timestamp.hour >= 12 ? 'Pm' : 'Am';
+    return '$hour:$minute $ampm';
+  }
+
+  void ResetAIAgent() {
+    // TODO
+    ChatMsg Resetmessage = ChatMsg(
+      sender: SelfUser.userName,
+      receiver: TargetUser.userName,
+      service: ServiceType.ai_reply,
+      type: MessageType.system,
+      content: "Reset",
+      timestamp: GetNowTimeStamp(),
+    );
+
+    SelfUser.sendMessage(Resetmessage);
   }
 }

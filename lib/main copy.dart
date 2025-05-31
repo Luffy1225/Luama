@@ -22,16 +22,15 @@ class Luama extends StatelessWidget {
     final AppColors appColors =
         (brightness == Brightness.dark) ? DarkTheme : LightTheme;
 
-    return AppColorsProvider(
+    return AppContextProvider(
       appColors: appColors,
-      // isDarkMode: brightness == Brightness.dark,
+      isDarkMode: brightness == Brightness.dark,
 
       // MySelf: mySelf,
       child: MaterialApp(
         title: 'Luama',
         debugShowCheckedModeBanner: false,
         home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
-        // home: StitchDesignPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
       ),
     );
   }
@@ -96,6 +95,7 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: TextField(
@@ -118,31 +118,26 @@ class _HomepageState extends State<Homepage> {
                 ),
               ),
             ),
-
-            // Expanded(
-            //   child: ListView.builder(
-            //     itemCount: _userManager.length,
-            //     itemBuilder: (context, index) {
-            //       TUser user = _userManager.getUserbyIndex(index);
-            //       return ContactItem(
-            //         user: user,
-            //         imageUrl:
-            //             'https://lh3.googleusercontent.com/aida-public/AB6AXuBIHF7EUmgGz-GfxYYs8sA6b_AoLTVatLIjS-_6ZJEQUKLoA9wYwtaWAgokmhYdeWm0Wkfqc5PZ1dXDSHVP-Kh_evGtg--cIE2aY2V04HsROqySx5qPFrLoFj06fm7Xtl3k50YzgLbZJQtu7nOQnJjehfbq1yXdRvap9IkB1yoZ3wddjJ5GJYjaqStHd2QqmLrPitZf2e3C7YWge3qlQikYOkd9AMhCezsTGPeReDLg69Xm-HBSbxKQeYvE4nbheCfA4Tq4eg6V_UIt',
-            //         onTap: () {
-            //           Navigator.of(context).push(
-            //             createRoute(
-            //               ChatPage(MySelf, _userManager.getUserbyIndex(index)),
-            //               Anima_Direction.FromRightIn,
-            //             ),
-            //           );
-            //         },
-            //       );
-            //     },
-            //   ),
-            // ),
             Expanded(
-              // 中間
-              child: _buildBody(),
+              child: ListView.builder(
+                itemCount: _userManager.length,
+                itemBuilder: (context, index) {
+                  TUser user = _userManager.getUserbyIndex(index);
+                  return ContactItem(
+                    user: user,
+                    imageUrl:
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBIHF7EUmgGz-GfxYYs8sA6b_AoLTVatLIjS-_6ZJEQUKLoA9wYwtaWAgokmhYdeWm0Wkfqc5PZ1dXDSHVP-Kh_evGtg--cIE2aY2V04HsROqySx5qPFrLoFj06fm7Xtl3k50YzgLbZJQtu7nOQnJjehfbq1yXdRvap9IkB1yoZ3wddjJ5GJYjaqStHd2QqmLrPitZf2e3C7YWge3qlQikYOkd9AMhCezsTGPeReDLg69Xm-HBSbxKQeYvE4nbheCfA4Tq4eg6V_UIt',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        createRoute(
+                          ChatPage(MySelf, _userManager.getUserbyIndex(index)),
+                          Anima_Direction.FromRightIn,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -184,76 +179,58 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
-
-  Widget _buildBody() {
-    switch (_NavSelectedIndex) {
-      case 0:
-        return Nav_HomeWidget(mySelf: MySelf);
-      case 1:
-        return Nav_ChatWidget(
-          mySelf: MySelf,
-          userManager: _userManager,
-        ); // 你聊天頁面Widget
-      // case 2:
-      //   return Nav_PostWidget(); // 你貼文頁面Widget
-      // case 3:
-      //   return Nav_ProfileWidget(); // 你個人頁面Widget
-      default:
-        return Nav_ProfileWidget(); // 你個人頁面Widget
-    }
-  }
 }
 
-// class ContactItem extends StatelessWidget {
-//   final TUser user;
+class ContactItem extends StatelessWidget {
+  final TUser user;
 
-//   final String imageUrl;
-//   final VoidCallback? onTap; // 可選的點擊事件
+  final String imageUrl;
+  final VoidCallback? onTap; // 可選的點擊事件
 
-//   const ContactItem({
-//     required this.user,
-//     required this.imageUrl,
-//     this.onTap,
-//     Key? key,
-//   }) : super(key: key);
+  const ContactItem({
+    required this.user,
+    required this.imageUrl,
+    this.onTap,
+    Key? key,
+  }) : super(key: key);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final appColors = AppColorsProvider.of(context);
+  @override
+  Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
 
-//     return InkWell(
-//       onTap: onTap, // 當被點擊時呼叫
-//       child: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//         child: Row(
-//           children: [
-//             CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 28),
-//             const SizedBox(width: 16),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     user.userName,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.w500,
-//                       color: appColors.contactItemUserName,
-//                     ),
-//                   ),
-//                   Text(
-//                     "Message example",
-//                     style: TextStyle(
-//                       fontSize: 14,
-//                       color: appColors.contactItemMessage,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+    return InkWell(
+      onTap: onTap, // 當被點擊時呼叫
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.userName,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: appColors.contactItemUserName,
+                    ),
+                  ),
+                  Text(
+                    "Message example",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: appColors.contactItemMessage,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

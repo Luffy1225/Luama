@@ -12,6 +12,7 @@ import json
 import os
 
 from chatmsg import (
+    ServiceType,
     MessageType,
     what_msg_type,
     get_timestamp,
@@ -72,6 +73,7 @@ class AIServer:
             sender=self.name,
             receiver="all",
             content=message,
+            service=ServiceType.NONE,
             type=MessageType.TEXT,
             timestamp=get_timestamp(),
         )
@@ -109,9 +111,12 @@ class AIServer:
 
     def handle_client(self, conn, addr):
         client_key = str(addr)
-        self.client_histories[client_key] = [
-            {"role": "system", "content": SYSTEM_PROMPT}
-        ]
+        # self.client_histories[client_key] = {}
+        if client_key not in self.client_histories:
+            self.client_histories[client_key] = {}
+        # self.client_histories[client_key] = [
+        #     {"role": "system", "content": SYSTEM_PROMPT}
+        # ]
 
         with conn:
             while self.is_running:
@@ -127,10 +132,21 @@ class AIServer:
                     json_obj = json.loads(user_rawData)
 
                     user_from = json_obj.get("sender", "")
-                    AI_Agent = json_obj.get("receiver")
+                    AI_Agent = select_AImodel(json_obj.get("receiver"))
                     msg_type = MessageType(json_obj.get("type", "text"))
                     user_prompt = json_obj.get("content", "")
-                    AI_Agent = select_AImodel(AI_Agent)
+
+                    # 取得該 client 的所有 model histories
+                    model_histories = self.client_histories[client_key]
+
+                    # 如果這個 model 沒有 history，先初始化
+                    if AI_Agent not in model_histories:
+                        model_histories[AI_Agent] = [
+                            {"role": "system", "content": SYSTEM_PROMPT}
+                        ]
+
+                    # 取得該 model 的 history
+                    history = model_histories[AI_Agent]
 
                     # 🔍 偵測是否為 base64 圖片
                     if msg_type == MessageType.IMAGE:
@@ -159,6 +175,8 @@ class AIServer:
                         chatmsg = ChatMsg(
                             content=msg,
                             sender=self.name,
+                            receiver=self.user_from,
+                            service=ServiceType.NONE,
                             type=MessageType.TEXT,
                             timestamp=get_timestamp(),
                         )
@@ -181,6 +199,7 @@ class AIServer:
                             sender=AI_Agent,
                             receiver=user_from,
                             content=response,
+                            service=ServiceType.NONE,
                             type=MessageType.TEXT,
                             timestamp=get_timestamp(),
                         )
@@ -199,7 +218,7 @@ class AIServer:
 
     def SavelogToFile(log):
         time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        log_file = f"LLMServer/server_log{time}.txt"
+        log_file = f"Server/server_log{time}.txt"
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(log + "\n")
         print(f"✅ 日誌已寫入檔案：{log_file}")
@@ -208,7 +227,7 @@ class AIServer:
 
 def listandSave_ollama_models_to_json():
     url = "http://localhost:11434/api/tags"
-    output_file = "LLMServer/aimodel_list.json"
+    output_file = "Server/aimodel_list.json"
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -242,11 +261,11 @@ def is_base64_image(data_str):
 
 
 def select_AImodel(model_name):
-    file_path = "LLMServer/aimodel_list.json"
+    file_path = "Server/aimodel_list.json"
 
     # 檢查檔案是否存在
     if not os.path.exists(file_path):
-        print("⚠️ 找不到 aimodel_list.json 檔案。")
+        print("⚠️ 找不到 {file_path}檔案。")
         return None
 
     # 讀取模型清單
@@ -321,6 +340,8 @@ if __name__ == "__main__":
             break
         elif cmd == "/l":
             listandSave_ollama_models_to_json()
+        elif cmd == "/his":
+            server.printHistory()
         elif cmd == "/h":
             print(
                 """

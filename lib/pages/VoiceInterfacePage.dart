@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:luama/OLDmain.dart';
 import 'dart:convert';
 
 import '../util/STTAndTTSManager.dart';
@@ -61,7 +60,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
         receiver: TargetUser.userName,
         type: MessageType.text,
         content: _ShowText,
-        timestamp: GetTimeStamp(),
+        timestamp: GetNowTimeStamp(),
       );
 
       SelfUser.sendMessage(chatmsg);

@@ -74,16 +74,27 @@ class TUser {
     }
   }
 
-  void sendMessage(ChatMsg chatmsg) {
+  Future<void> sendMessage(ChatMsg chatmsg) async {
     String message = ChatMsg2String(chatmsg);
 
     if (client.isConnected) {
       client.sendMessage(message);
     } else {
-      client.connectToServer();
+      await client.connectToServer();
       client.sendMessage(message);
     }
   }
+
+  //  void sendMessage(ChatMsg chatmsg) {
+  //   String message = ChatMsg2String(chatmsg);
+
+  //   if (client.isConnected) {
+  //     client.sendMessage(message);
+  //   } else {
+  //     client.connectToServer();
+  //     client.sendMessage(message);
+  //   }
+  // }
 
   bool operator ==(Object other) =>
       identical(this, other) ||

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 
 import '../util/user.dart';
 import '../util/app_colors.dart'; // 引用自訂顏色
+import '../util/chatmsg.dart'; // 引用自訂顏色
 
 class SettingPage extends StatefulWidget {
-  final TUser user;
+  final TUser SelfUser;
+  final TUser TargetUser;
 
-  const SettingPage({required this.user}); // <== 新增 constructor 傳入
+  const SettingPage(this.SelfUser, this.TargetUser); // <== 新增 constructor 傳入
 
   @override
   _SettingPageState createState() => _SettingPageState();
@@ -21,6 +23,8 @@ class _SettingPageState extends State<SettingPage> {
   final TextEditingController _fontSizeController = TextEditingController();
   final TextEditingController _ipController = TextEditingController();
   final TextEditingController _portController = TextEditingController();
+
+  final TextEditingController _customPromptController = TextEditingController();
 
   void _connect() {
     final ip = _ipController.text.trim();
@@ -38,7 +42,24 @@ class _SettingPageState extends State<SettingPage> {
       context,
     ).showSnackBar(SnackBar(content: Text("嘗試連線至 $ip:$port")));
 
-    widget.user.connect(ip, port);
+    widget.SelfUser.connect(ip, port);
+  }
+
+  void setCustomPrompt() {
+    final customPrompt = _customPromptController.text;
+    ChatMsg setCustomPromptmsg = ChatMsg(
+      sender: widget.SelfUser.userName,
+      receiver: widget.TargetUser.userName,
+      service: ServiceType.ai_reply,
+      type: MessageType.system,
+      content: "SetCustomPrompt: " + customPrompt,
+      timestamp: GetNowTimeStamp(),
+    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("設置System Prompt: $customPrompt.")));
+
+    widget.SelfUser.sendMessage(setCustomPromptmsg);
   }
 
   void _saveFontSize() {
@@ -69,46 +90,6 @@ class _SettingPageState extends State<SettingPage> {
           children: [
             _buildHeader(appColors: appColors),
             Divider(),
-            Padding(
-              padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '連線',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: appColors.PrimaryText,
-                  ),
-                ),
-              ),
-            ),
-            _buildInputField(
-              label: 'IP Address',
-              hint: 'Enter IP Address',
-              appColors: appColors,
-            ),
-            _buildInputField(
-              label: 'IP Port',
-              hint: 'Enter IP Port',
-              appColors: appColors,
-            ),
-            _buildConnectButton(appColors: appColors),
-            Divider(),
-            Padding(
-              padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '設定',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: appColors.PrimaryText,
-                  ),
-                ),
-              ),
-            ),
             SwitchListTile(
               title: Text(
                 "開啟通知",
@@ -128,7 +109,6 @@ class _SettingPageState extends State<SettingPage> {
                 });
               },
             ),
-
             SwitchListTile(
               title: Text(
                 "深色模式",
@@ -149,6 +129,51 @@ class _SettingPageState extends State<SettingPage> {
               },
             ),
             Divider(),
+            _CustomInputField(appColors: appColors),
+            _buildSetCustomPromptButton(appColors: appColors),
+            Divider(),
+            // Divider(),
+            // Padding(
+            //   padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+            //   child: Align(
+            //     alignment: Alignment.centerLeft,
+            //     child: Text(
+            //       '連線',
+            //       style: TextStyle(
+            //         fontSize: 22,
+            //         fontWeight: FontWeight.bold,
+            //         color: appColors.PrimaryText,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // _buildInputField(
+            //   label: 'IP Address',
+            //   hint: 'Enter IP Address',
+            //   appColors: appColors,
+            // ),
+            // _buildInputField(
+            //   label: 'IP Port',
+            //   hint: 'Enter IP Port',
+            //   appColors: appColors,
+            // ),
+            // _buildConnectButton(appColors: appColors),
+            // Divider(),
+            // Padding(
+            //   padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+            //   child: Align(
+            //     alignment: Alignment.centerLeft,
+            //     child: Text(
+            //       '設定',
+            //       style: TextStyle(
+            //         fontSize: 22,
+            //         fontWeight: FontWeight.bold,
+            //         color: appColors.PrimaryText,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+
             // const Padding(
             //   padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             //   child: Align(
@@ -245,7 +270,7 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Widget _buildConnectButton({required AppColors appColors}) {
+  Widget _buildSetCustomPromptButton({required AppColors appColors}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -262,10 +287,10 @@ class _SettingPageState extends State<SettingPage> {
               minimumSize: const Size(84, 40),
             ),
             onPressed: () {
-              _connect();
+              setCustomPrompt();
             },
             child: const Text(
-              'Connect',
+              'Set',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
           ),
@@ -344,6 +369,93 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
   }
+
+  Widget _CustomInputField({required AppColors appColors}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0), // 加入左右邊界
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: appColors.TextBox_Background,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: appColors.Secondary_Color),
+        ),
+        child: Scrollbar(
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 165, maxHeight: 165),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: TextField(
+                  controller: _customPromptController, // 綁定 controller
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    hintText: '輸入 AI 的 system prompt...',
+                    hintStyle: TextStyle(
+                      color: appColors.TextBoxHint_Background,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  style: TextStyle(color: appColors.PrimaryText),
+                  onChanged: (value) {
+                    print("System prompt updated: $value");
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget _CustomInputField({required AppColors appColors, required BuildContext context}) {
+  //   // 計算左右 padding 為畫面寬度的 5%
+  //   double horizontalPadding = MediaQuery.of(context).size.width * 0.05;
+
+  //   return Padding(
+  //     padding: EdgeInsets.symmetric(horizontal: horizontalPadding), // 自適應左右邊界
+  //     child: Container(
+  //       padding: const EdgeInsets.all(12),
+  //       decoration: BoxDecoration(
+  //         color: appColors.TextBox_Background,
+  //         borderRadius: BorderRadius.circular(12),
+  //         border: Border.all(color: appColors.Secondary_Color),
+  //       ),
+  //       child: Scrollbar(
+  //         thumbVisibility: true,
+  //         child: SingleChildScrollView(
+  //           scrollDirection: Axis.vertical,
+  //           child: ConstrainedBox(
+  //             constraints: const BoxConstraints(
+  //               minHeight: 165,
+  //               maxHeight: 165,
+  //             ),
+  //             child: Padding(
+  //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
+  //               child: TextField(
+  //                 maxLines: null,
+  //                 decoration: InputDecoration(
+  //                   isCollapsed: true,
+  //                   hintText: '輸入 AI 的 system prompt...',
+  //                   hintStyle: TextStyle(color: appColors.TextBoxHint_Background),
+  //                   border: InputBorder.none,
+  //                 ),
+  //                 style: TextStyle(color: appColors.PrimaryText),
+  //                 onChanged: (value) {
+  //                   print("System prompt updated: $value");
+  //                 },
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
