@@ -90,6 +90,11 @@ class STTAndTTSManager {
     await _flutterTts.speak(text);
   }
 
+  /// 說出指定文字
+  Future<void> Stopspeak(String text) async {
+    await _flutterTts.stop();
+  }
+
   /// 朗讀最後辨識文字
   Future<void> speakRecognizedText() async {
     if (_recognizedText.isNotEmpty) {
