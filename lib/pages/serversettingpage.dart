@@ -243,15 +243,15 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
                 ScaffoldMessenger.of(
                   context,
                 ).showSnackBar(SnackBar(content: Text("ip port 任一不可為空")));
+              } else {
+                widget.SelfUser.SetIP(ip);
+                widget.SelfUser.SetPort(portstr);
+
+                widget.SelfUser.startClient();
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("嘗試連接:$ip:$portstr")));
               }
-
-              widget.SelfUser.SetIP(ip);
-              widget.SelfUser.SetPort(portstr);
-
-              widget.SelfUser.startClient();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("嘗試連接:$ip:$portstr")));
             },
             child: const Text(
               'Connect',
