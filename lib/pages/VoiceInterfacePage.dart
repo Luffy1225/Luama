@@ -59,6 +59,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
         sender: SelfUser.userName,
         receiver: TargetUser.userName,
         type: MessageType.text,
+        service: ServiceType.ai_reply,
         content: _ShowText,
         timestamp: GetNowTimeStamp(),
       );

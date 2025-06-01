@@ -24,19 +24,8 @@ class TUser {
   late Server server;
   late Client client;
 
-  // static const DEFAULT_IP = '192.168.56.1';
-  // static const int DEFAULT_PORT = 8888;
-  // static const DEFAULT_IP = "127.0.0.1";
-  // static const int DEFAULT_PORT = 50007;
-
-  // static const DEFAULT_IP = "192.168.56.1";
-  // static const int DEFAULT_PORT = 50007;
-
-  static const DEFAULT_IP = "6.tcp.ngrok.io";
-  // static const DEFAULT_IP = "0.tcp.ngrok.io";
+  static const DEFAULT_IP = "0.tcp.ngrok.io";
   static const int DEFAULT_PORT = 14728;
-
-  // tcp://6.tcp.ngrok.io:14385
 
   // 建構子
   TUser({
@@ -109,7 +98,8 @@ class TUser {
   }
 
   bool isIpValid(String IP) {
-    return true;
+    return true; // Bypassed because the Ngrok server uses an invalid IP address in this region
+
     // // Simple IPv4 validation
     // final parts = IP.split('.');
     // if (parts.length != 4) return false;
