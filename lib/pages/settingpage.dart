@@ -52,7 +52,7 @@ class _SettingPageState extends State<SettingPage> {
       receiver: widget.TargetUser.userName,
       service: ServiceType.ai_reply,
       type: MessageType.system,
-      content: "SetCustomPrompt: " + customPrompt,
+      content: "SetCustomPrompt: $customPrompt",
       timestamp: GetNowTimeStamp(),
     );
     ScaffoldMessenger.of(

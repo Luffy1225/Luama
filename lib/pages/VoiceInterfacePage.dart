@@ -184,6 +184,9 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 顯示資訊
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
                       },
                     ),
                   ),
@@ -199,6 +202,9 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 上傳功能
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
                       },
                     ),
                   ),
@@ -214,6 +220,9 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 調整設定
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
                       },
                     ),
                   ),
