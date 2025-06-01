@@ -7,6 +7,9 @@ class Client {
   String userName;
   Socket? socket; // 用來存儲已連線的 Socket
 
+  static int reconnectAttempts = 0;
+  static int maxReconnectAttempts = 3;
+
   Function(String message)? onMessageReceived;
 
   bool _isSocketClosed = true;
@@ -56,6 +59,69 @@ class Client {
       print('Error: $e');
     }
   }
+
+  Future<void> reconnect() async {
+    if (reconnectAttempts >= maxReconnectAttempts) {
+      print('超過最大重連次數，停止嘗試');
+      return;
+    }
+
+    reconnectAttempts++;
+    print('第 $reconnectAttempts 次重連中...');
+
+    await Future.delayed(Duration(seconds: 3)); // 每次間隔 3 秒
+    await connectToServer();
+  }
+
+  // Future<void> connectToServer({String? ip_, int? port_}) async {
+  //   try {
+  //     if (isConnected) {
+  //       await socket?.close();
+  //       socket?.destroy();
+  //       socket = null;
+  //       _isSocketClosed = true;
+  //     }
+
+  //     if (ip_ != null) ip = ip_;
+  //     if (port_ != null) port = port_;
+
+  //     socket = await Socket.connect(ip, port);
+  //     print(
+  //       'Connected to: ${socket?.remoteAddress.address}:${socket?.remotePort}',
+  //     );
+  //     _isSocketClosed = false;
+  //     reconnectAttempts = 0; // ✅ 重連成功後重置計數
+
+  //     socket?.listen(
+  //       (event) {
+  //         String str = utf8.decode(event);
+  //         print('Server SAY: $str');
+  //         onMessageReceived?.call(str);
+  //       },
+  //       onDone: () {
+  //         print("連線結束，嘗試重連...");
+  //         _isSocketClosed = true;
+  //         socket = null;
+  //         reconnect(); // ✅ 嘗試重連
+  //       },
+  //     );
+  //   } catch (e) {
+  //     print('連線錯誤: $e');
+  //     reconnect(); // ✅ 連線失敗時重試
+  //   }
+  // }
+
+  // Future<void> reconnect() async {
+  //   if (reconnectAttempts >= maxReconnectAttempts) {
+  //     print('已達最大重連次數');
+  //     return;
+  //   }
+
+  //   reconnectAttempts++;
+  //   print('第 $reconnectAttempts 次重連中...');
+  //   await Future.delayed(Duration(seconds: 3));
+  //   await connectToServer();
+  // }
 
   // 發送訊息到伺服器
   void sendMessage(String text) {

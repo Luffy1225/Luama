@@ -40,6 +40,7 @@ class LuamaServer:
         self.server_socket = None
         self.is_running = False
         self.clients = []
+        self.clientslist = {}
         self.client_histories = {}
         self.server_thread = None
 
@@ -64,6 +65,7 @@ class LuamaServer:
                 conn, addr = self.server_socket.accept()
                 print("\n🔗 已連線：", addr)
                 self.clients.append(conn)
+                # self.clientslist[]
                 threading.Thread(
                     target=self.handle_client, args=(conn, addr), daemon=True
                 ).start()
@@ -233,7 +235,11 @@ class LuamaServer:
         self,
         json_message,
     ):
-        user_rawData = json_message.get("text", "")
+        user_from = json_message.get("sender", "")
+        user_sendto = json_message.get("receiver")
+        msg_type = MessageType(json_message.get("type", "text"))
+        amountstr = json_message.get("content", "")
+
         return {
             "type": "user_response",
             "response": f"User 回應：你說的是『{user_rawData}』",
@@ -392,6 +398,7 @@ class LuamaServer:
             with open("Server/News.json", "w", encoding="utf-8") as f:
                 json.dump(jsondata, f, ensure_ascii=False, indent=2)
             print("已儲存至 Server/News.json")
+            return jsondata
         else:
             print("找不到新聞")
 

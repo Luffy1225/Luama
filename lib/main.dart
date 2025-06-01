@@ -5,6 +5,8 @@ import 'util/user.dart';
 import 'util/Page_animation.dart';
 import 'util/global_Setting.dart';
 
+// import 'pages/settingpage.dart';
+import 'pages/serversettingpage.dart';
 import 'pages/chatpage.dart';
 import 'pages/nav/nav_chatpage.dart';
 import 'pages/nav/nav_homepage.dart';
@@ -89,8 +91,12 @@ class _HomepageState extends State<Homepage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: IconButton(
-                      icon: Icon(Icons.edit, color: appColors.TopBar_IconColor),
-                      onPressed: () {},
+                      icon: Icon(
+                        Icons.settings,
+                        color: appColors.TopBar_IconColor,
+                      ),
+                      tooltip: '設定',
+                      onPressed: _onSettingsPressed,
                     ),
                   ),
                 ],
@@ -202,58 +208,10 @@ class _HomepageState extends State<Homepage> {
         return Nav_ProfileWidget(); // 你個人頁面Widget
     }
   }
+
+  void _onSettingsPressed() {
+    Navigator.of(
+      context,
+    ).push(createRoute(ServerSettingPage(MySelf), Anima_Direction.FromRightIn));
+  }
 }
-
-// class ContactItem extends StatelessWidget {
-//   final TUser user;
-
-//   final String imageUrl;
-//   final VoidCallback? onTap; // 可選的點擊事件
-
-//   const ContactItem({
-//     required this.user,
-//     required this.imageUrl,
-//     this.onTap,
-//     Key? key,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final appColors = AppColorsProvider.of(context);
-
-//     return InkWell(
-//       onTap: onTap, // 當被點擊時呼叫
-//       child: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//         child: Row(
-//           children: [
-//             CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 28),
-//             const SizedBox(width: 16),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     user.userName,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.w500,
-//                       color: appColors.contactItemUserName,
-//                     ),
-//                   ),
-//                   Text(
-//                     "Message example",
-//                     style: TextStyle(
-//                       fontSize: 14,
-//                       color: appColors.contactItemMessage,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

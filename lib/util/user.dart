@@ -29,8 +29,14 @@ class TUser {
   // static const DEFAULT_IP = "127.0.0.1";
   // static const int DEFAULT_PORT = 50007;
 
-  static const DEFAULT_IP = "192.168.56.1";
-  static const int DEFAULT_PORT = 50007;
+  // static const DEFAULT_IP = "192.168.56.1";
+  // static const int DEFAULT_PORT = 50007;
+
+  static const DEFAULT_IP = "6.tcp.ngrok.io";
+  // static const DEFAULT_IP = "0.tcp.ngrok.io";
+  static const int DEFAULT_PORT = 14728;
+
+  // tcp://6.tcp.ngrok.io:14385
 
   // 建構子
   TUser({
@@ -42,7 +48,7 @@ class TUser {
     bool? isAIAgent,
   }) : iconData = iconData ?? Icons.person,
        isAIAgent = isAIAgent ?? false {
-    server = Server(ip: DEFAULT_IP, port: DEFAULT_PORT, userName: userName);
+    // server = Server(ip: DEFAULT_IP, port: DEFAULT_PORT, userName: userName);
     client = Client(ip: DEFAULT_IP, port: DEFAULT_PORT, userName: userName);
 
     isOnline = true; // 預設值為 false，表示離線
@@ -83,6 +89,44 @@ class TUser {
       await client.connectToServer();
       client.sendMessage(message);
     }
+  }
+
+  void SetIP(String IP) {
+    if (isIpValid(IP)) {
+      client.ip = IP;
+    } else {
+      return;
+    }
+  }
+
+  void SetPort(String portstr) {
+    if (isPortValid(portstr)) {
+      final port = int.tryParse(portstr);
+      client.port = port!;
+    } else {
+      return;
+    }
+  }
+
+  bool isIpValid(String IP) {
+    return true;
+    // // Simple IPv4 validation
+    // final parts = IP.split('.');
+    // if (parts.length != 4) return false;
+    // for (final part in parts) {
+    //   final n = int.tryParse(part);
+    //   if (n == null || n < 0 || n > 255) return false;
+    // }
+    // return true;
+  }
+
+  bool isPortValid(String port) {
+    final n = int.tryParse(port);
+    return n != null && n > 0 && n <= 65535;
+  }
+
+  bool isConnectionValid(String ip, String port) {
+    return isIpValid(ip) && isPortValid(port);
   }
 
   //  void sendMessage(ChatMsg chatmsg) {
