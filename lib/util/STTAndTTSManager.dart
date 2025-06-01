@@ -91,7 +91,7 @@ class STTAndTTSManager {
   }
 
   /// 說出指定文字
-  Future<void> Stopspeak(String text) async {
+  Future<void> Stopspeak() async {
     await _flutterTts.stop();
   }
 

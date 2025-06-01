@@ -161,6 +161,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                   icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () {
                     sttTtsManager.stopListening();
+                    sttTtsManager.Stopspeak();
                     Navigator.pop(context);
                   },
                 ),
@@ -240,6 +241,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
     sttTtsManager.setOnStatusCallback(null);
     sttTtsManager.setOnResultCallback(null);
     sttTtsManager.stopListening();
+    sttTtsManager.Stopspeak();
     super.dispose();
   }
 }
