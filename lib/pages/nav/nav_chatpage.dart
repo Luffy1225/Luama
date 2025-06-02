@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../util/user.dart';
+import '../../util/chatmsg.dart';
 import '../../util/app_colors.dart'; // 引用自訂顏色
 import '../../util/Page_animation.dart';
 
@@ -10,6 +11,9 @@ class Nav_ChatWidget extends StatelessWidget {
   final TUser mySelf;
   final UserManager userManager;
   // final AppColors appColors;
+
+  // final List<ChatMsg> _JSON_ChatHistory = [];
+  // final Map<String, List<ChatMsg>> userChatHistory = {};
 
   const Nav_ChatWidget({
     required this.mySelf,
@@ -31,7 +35,11 @@ class Nav_ChatWidget extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               createRoute(
-                ChatPage(mySelf, userManager.getUserbyIndex(index)),
+                ChatPage(
+                  mySelf,
+                  userManager.getUserbyIndex(index),
+                  userManager,
+                ),
                 Anima_Direction.FromRightIn,
               ),
             );

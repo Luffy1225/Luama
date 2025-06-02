@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../util/STTAndTTSManager.dart';
 import '../util/user.dart';
 import '../util/chatmsg.dart';
+import '../util/Page_animation.dart';
 
 class VoiceInterfacePage extends StatefulWidget {
   final TUser selfUser;
@@ -185,9 +186,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 顯示資訊
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
+                        SnackMessage(text: "功能尚未解鎖").show(context);
                       },
                     ),
                   ),
@@ -203,9 +202,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 上傳功能
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
+                        SnackMessage(text: "功能尚未解鎖").show(context);
                       },
                     ),
                   ),
@@ -221,9 +218,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
                       ),
                       onPressed: () {
                         // TODO: 調整設定
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text("功能尚未解鎖")));
+                        SnackMessage(text: "功能尚未解鎖").show(context);
                       },
                     ),
                   ),

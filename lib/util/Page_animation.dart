@@ -35,3 +35,24 @@ Route createRoute(Widget page, Anima_Direction direction) {
     },
   );
 }
+
+class SnackMessage {
+  final String text;
+  final DismissDirection dir;
+  final int duration;
+
+  SnackMessage({required this.text, DismissDirection? dir, int? duration})
+    : dir = dir ?? DismissDirection.down,
+      duration = duration ?? 3;
+
+  void show(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        behavior: SnackBarBehavior.floating,
+        dismissDirection: dir,
+        duration: Duration(seconds: duration),
+      ),
+    );
+  }
+}

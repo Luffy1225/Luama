@@ -203,6 +203,9 @@ enum SortRule { by_ID, by_Name, by_Time }
 class UserManager {
   List<TUser> users = [];
 
+  // 用 userId 作為 key，對應該使用者的聊天紀錄
+  Map<String, List<ChatMsg>> userChatHistories = {};
+
   UserManager() {
     loadSampleUser();
   }
@@ -260,6 +263,31 @@ class UserManager {
 
   TUser getUserbyIndex(int index) {
     return users[index];
+  }
+
+  void loadUserChatHistories() {}
+
+  void addChatMessage(String userId, ChatMsg msg) {
+    if (!userChatHistories.containsKey(userId)) {
+      userChatHistories[userId] = [];
+    }
+    userChatHistories[userId]!.add(msg);
+  }
+
+  List<ChatMsg> getChatHistory(String userId) {
+    if (!userChatHistories.containsKey(userId)) {
+      userChatHistories[userId] = <ChatMsg>[]; // 建立一個新的空紀錄
+      print("建立新的聊天紀錄給 $userId");
+    }
+    return userChatHistories[userId]!;
+  }
+
+  void clearChatHistory(String userId) {
+    userChatHistories.remove(userId);
+  }
+
+  void mergeChatHistory(String userId, List<ChatMsg> newHistory) {
+    userChatHistories[userId] = [...?userChatHistories[userId], ...newHistory];
   }
 
   int get length => users.length;

@@ -275,12 +275,24 @@ class LuamaServer:
         if command_name == "SetCustomPrompt":
             if self.client_histories.get(clientkey) is None:
                 self.client_histories[clientkey] = {}
+            # 直接覆蓋為只有一個 system prompt
+            self.client_histories[clientkey][AI_Agent] = [
+                {"role": "system", "content": command_value}
+            ]
+            print(f"✅ 自訂 prompt 已套用於 {AI_Agent}：{command_value}")
+
+        elif command_name == "Reset":
+            if self.client_histories.get(clientkey) is None:
+                self.client_histories[clientkey] = {}
+
             if AI_Agent not in self.client_histories[clientkey]:
                 self.client_histories[clientkey][AI_Agent] = []
-            self.client_histories[clientkey][AI_Agent].append(
-                {"role": "system", "content": command_value}
+            self.client_histories[clientkey][AI_Agent] = [
+                {"role": "system", "content": SYSTEM_PROMPT}
+            ]
+            print(
+                f"✅ 已重置User: {user_from} 的 {AI_Agent}聊天紀錄。 system prompt為 :{SYSTEM_PROMPT}"
             )
-            print(f"✅ 自訂 prompt 已套用於 {AI_Agent}：{command_value}")
 
     def _checkIfNews_isNew(self, jsonpath: str):
 

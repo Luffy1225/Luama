@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../util/user.dart';
 import '../util/app_colors.dart'; // 引用自訂顏色
 import '../util/chatmsg.dart'; // 引用自訂顏色
+import '../util/Page_animation.dart';
 
 class ServerSettingPage extends StatefulWidget {
   final TUser SelfUser;
@@ -30,17 +31,10 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
     final port = _portController.text.trim();
 
     if (!isConnectionValid(ip, port)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("請輸入正確的Ip, Port")));
+      SnackMessage(text: "請輸入正確的Ip, Port").show(context);
       return;
     }
-
-    // TODO: 在此處加上實際連線邏輯
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("嘗試連線至 $ip:$port")));
-
+    SnackMessage(text: "嘗試連線至 $ip:$port").show(context);
     widget.SelfUser.connect(ip, port);
   }
 
@@ -54,28 +48,9 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
       content: "SetCustomPrompt: " + customPrompt,
       timestamp: GetNowTimeStamp(),
     );
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("設置System Prompt: $customPrompt.")));
+    SnackMessage(text: "設置System Prompt: $customPrompt.").show(context);
 
     widget.SelfUser.sendMessage(setCustomPromptmsg);
-  }
-
-  void _saveFontSize() {
-    final input = _fontSizeController.text;
-    final parsed = double.tryParse(input);
-    if (parsed != null && parsed > 0) {
-      setState(() {
-        _fontSize = parsed;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("字體大小已設定為 $_fontSize")));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("請輸入有效的數字")));
-    }
   }
 
   @override
@@ -240,17 +215,13 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
               final portstr = _portController.text;
 
               if (ip == "" || portstr == "") {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("ip port 任一不可為空")));
+                SnackMessage(text: "ip port 任一不可為空").show(context);
               } else {
                 widget.SelfUser.SetIP(ip);
                 widget.SelfUser.SetPort(portstr);
 
                 widget.SelfUser.startClient();
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("嘗試連接:$ip:$portstr")));
+                SnackMessage(text: "嘗試連接:$ip:$portstr").show(context);
               }
             },
             child: const Text(

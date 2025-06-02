@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../util/user.dart';
 import '../util/app_colors.dart'; // 引用自訂顏色
 import '../util/chatmsg.dart'; // 引用自訂顏色
+import '../util/Page_animation.dart';
 
 class SettingPage extends StatefulWidget {
   final TUser SelfUser;
@@ -18,32 +19,9 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   bool _darkMode = false;
   bool _notifications = true;
-  double? _fontSize;
 
   final TextEditingController _fontSizeController = TextEditingController();
-  final TextEditingController _ipController = TextEditingController();
-  final TextEditingController _portController = TextEditingController();
-
   final TextEditingController _customPromptController = TextEditingController();
-
-  void _connect() {
-    final ip = _ipController.text.trim();
-    final port = _portController.text.trim();
-
-    if (!isConnectionValid(ip, port)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("請輸入正確的Ip, Port")));
-      return;
-    }
-
-    // TODO: 在此處加上實際連線邏輯
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("嘗試連線至 $ip:$port")));
-
-    widget.SelfUser.connect(ip, port);
-  }
 
   void setCustomPrompt() {
     final customPrompt = _customPromptController.text;
@@ -55,28 +33,9 @@ class _SettingPageState extends State<SettingPage> {
       content: "SetCustomPrompt: $customPrompt",
       timestamp: GetNowTimeStamp(),
     );
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("設置System Prompt: $customPrompt.")));
+    SnackMessage(text: "設置System Prompt: $customPrompt.").show(context);
 
     widget.SelfUser.sendMessage(setCustomPromptmsg);
-  }
-
-  void _saveFontSize() {
-    final input = _fontSizeController.text;
-    final parsed = double.tryParse(input);
-    if (parsed != null && parsed > 0) {
-      setState(() {
-        _fontSize = parsed;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("字體大小已設定為 $_fontSize")));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("請輸入有效的數字")));
-    }
   }
 
   @override
@@ -90,6 +49,37 @@ class _SettingPageState extends State<SettingPage> {
           children: [
             _buildHeader(appColors: appColors),
             Divider(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'AI System Prompt 設定',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: appColors.PrimaryText,
+                  ),
+                ),
+              ),
+            ),
+            _CustomInputField(appColors: appColors),
+            _buildSetCustomPromptButton(appColors: appColors),
+            Divider(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '其他',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: appColors.PrimaryText,
+                  ),
+                ),
+              ),
+            ),
             SwitchListTile(
               title: Text(
                 "開啟通知",
@@ -128,9 +118,7 @@ class _SettingPageState extends State<SettingPage> {
                 });
               },
             ),
-            Divider(),
-            _CustomInputField(appColors: appColors),
-            _buildSetCustomPromptButton(appColors: appColors),
+
             Divider(),
             // Divider(),
             // Padding(
@@ -411,51 +399,6 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
   }
-
-  // Widget _CustomInputField({required AppColors appColors, required BuildContext context}) {
-  //   // 計算左右 padding 為畫面寬度的 5%
-  //   double horizontalPadding = MediaQuery.of(context).size.width * 0.05;
-
-  //   return Padding(
-  //     padding: EdgeInsets.symmetric(horizontal: horizontalPadding), // 自適應左右邊界
-  //     child: Container(
-  //       padding: const EdgeInsets.all(12),
-  //       decoration: BoxDecoration(
-  //         color: appColors.TextBox_Background,
-  //         borderRadius: BorderRadius.circular(12),
-  //         border: Border.all(color: appColors.Secondary_Color),
-  //       ),
-  //       child: Scrollbar(
-  //         thumbVisibility: true,
-  //         child: SingleChildScrollView(
-  //           scrollDirection: Axis.vertical,
-  //           child: ConstrainedBox(
-  //             constraints: const BoxConstraints(
-  //               minHeight: 165,
-  //               maxHeight: 165,
-  //             ),
-  //             child: Padding(
-  //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-  //               child: TextField(
-  //                 maxLines: null,
-  //                 decoration: InputDecoration(
-  //                   isCollapsed: true,
-  //                   hintText: '輸入 AI 的 system prompt...',
-  //                   hintStyle: TextStyle(color: appColors.TextBoxHint_Background),
-  //                   border: InputBorder.none,
-  //                 ),
-  //                 style: TextStyle(color: appColors.PrimaryText),
-  //                 onChanged: (value) {
-  //                   print("System prompt updated: $value");
-  //                 },
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   @override
   void dispose() {

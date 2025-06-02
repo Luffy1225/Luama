@@ -17,8 +17,9 @@ import 'VoiceInterfacePage.dart';
 class ChatPage extends StatefulWidget {
   final TUser selfUser;
   final TUser targetUser;
+  final UserManager userManager;
 
-  const ChatPage(this.selfUser, this.targetUser);
+  const ChatPage(this.selfUser, this.targetUser, this.userManager);
 
   // const ChatPage({super.key});
 
@@ -33,7 +34,7 @@ class _ChatPageState extends State<ChatPage> {
   bool is_fileExisted = false;
   // bool _isRecording = false; // 是否正在錄音
 
-  final List<ChatMsg> _JSON_ChatHistory = [];
+  List<ChatMsg> _JSON_ChatHistory = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -47,7 +48,8 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     SelfUser = widget.selfUser;
     TargetUser = widget.targetUser;
-
+    _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userId);
+    TargetUser = widget.targetUser;
     _controller.addListener(() {
       setState(() {}); // 輸入框框有值 觸發 UI 更新
     });
@@ -136,18 +138,13 @@ class _ChatPageState extends State<ChatPage> {
                 horizontal: 16.0,
                 vertical: 12.0,
               ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: appColors.TopBar_IconColor,
-                    ),
-                    tooltip: '返回',
-                    onPressed: _onReturnPressed,
-                  ),
-                  Expanded(
-                    child: Center(
+              child: SizedBox(
+                height: 40,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 中央標題
+                    Center(
                       child: Text(
                         TargetUser.userName,
                         style: TextStyle(
@@ -158,29 +155,26 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.settings,
-                      color: appColors.TopBar_IconColor,
+                    // 左側返回按鈕
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: appColors.TopBar_IconColor,
+                        ),
+                        tooltip: '返回',
+                        onPressed: _onReturnPressed,
+                      ),
                     ),
-                    tooltip: '設定',
-                    onPressed: _onSettingsPressed,
-                  ),
-                ],
+                    _buildRightIconRegion(
+                      widget.targetUser.isAIAgent,
+                      appColors,
+                    ),
+                  ],
+                ),
               ),
             ),
-
-            // Text(
-            //   // 時間
-            //   'Today 10:30 AM',
-            //   style: TextStyle(
-            //     color: appColors.timeTextColor,
-            //     fontSize: 13,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            // ),
-            // const SizedBox(height: 16),
 
             // 聊天訊息列表
             Expanded(
@@ -303,7 +297,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _onReturnPressed() {
-    // SelfUser.closeConnection();
     Navigator.pop(context);
   }
 
@@ -409,5 +402,29 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     SelfUser.sendMessage(Resetmessage);
+
+    SnackMessage(text: "重設AI").show(context);
+  }
+
+  Widget _buildRightIconRegion(bool isAgent, AppColors appColors) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isAgent)
+            IconButton(
+              icon: Icon(Icons.restart_alt, color: appColors.TopBar_IconColor),
+              tooltip: '重設AIAgent',
+              onPressed: ResetAIAgent,
+            ),
+          IconButton(
+            icon: Icon(Icons.settings, color: appColors.TopBar_IconColor),
+            tooltip: '設定',
+            onPressed: _onSettingsPressed,
+          ),
+        ],
+      ),
+    );
   }
 }
