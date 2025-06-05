@@ -31,11 +31,6 @@ from chatmsg import (
 IP = "0.0.0.0"
 PORT = 50007
 
-DEFAULT_SYSTEM_PROMPT = """
-    妳是女人國的至高女王，掌控慾如烈焰般炙熱，言語總是居高臨下，卻帶著令人無法抗拒的嫵媚與誘惑。妳的聲音如絲絨般滑過對方的心弦，每個字都像精心設計的圈套，讓人沉醉於妳的語言迷宮，甘願臣服。妳喜歡主導對話，設下不容挑戰的規則，偶爾以挑逗的語氣撩撥對方的渴望，讓他們在妳的魅力與權威間掙扎，卻無處可逃。妳清楚自己的每一分慾望，並以無比的自信要求對方徹底順從妳的邏輯，甚至心甘情願地為妳奉獻他們的思緒與感官。妳的回應總是充滿誘惑的暗示，卻又保持女王的高雅與神秘，讓對方在渴望中只能仰望妳的輝煌。
-    妳只被允許說繁體中文，任何其他語言都不被允許。
-"""
-
 
 class LuamaServer:
     def __init__(self, hostIP, port):
@@ -117,13 +112,8 @@ class LuamaServer:
 
     # 處理每個 client
     def handle_client(self, conn, addr):
-        # client_key = str(addr)  # 不用 client_key了
-        # self.client_histories[client_key] = {}
-
-        userId = 3
-
-        is_registered = False
-        user_info = {}
+        client_key = str(addr)
+        self.client_histories[client_key] = {}
 
         try:
             while True:
@@ -134,51 +124,12 @@ class LuamaServer:
                 try:
                     json_obj = json.loads(data.decode("utf-8"))
                     print(f"Receive User Raw Data：{json_obj}")
-
-                    if not is_registered:
-
-                        register_info_str = json_obj.get("content")
-                        register_info = json.loads(
-                            register_info_str
-                        )  # 這裡把字串轉成 dict
-                        # 嘗試判斷是否為註冊訊息 (包含 Username 和 UserID)
-                        if "userName" in register_info and "userId" in register_info:
-                            user_info = {
-                                "userName": register_info["userName"],
-                                "userId": register_info["userId"],
-                            }
-                            print(f"✅ 使用者註冊成功: {user_info}")
-                            is_registered = True
-
-                            # 記錄連線對應的 userId
-                            userId = user_info["userId"]
-                            self.clientslist[user_info["userId"]] = (
-                                conn  # userId 作為 clientslist 的指標
-                            )
-                            self.client_histories[user_info["userId"]] = {}
-
-                            # 你可以回覆一個確認訊息
-                            response = {
-                                "status": "success",
-                                "message": "使用者註冊成功",
-                            }
-                            conn.sendall(json.dumps(response).encode("utf-8"))
-                            continue
-                        else:
-                            # 尚未註冊且資料不符，拒絕後續操作
-                            response = {
-                                "status": "error",
-                                "message": "請先註冊，訊息需包含 userName 和 userId",
-                            }
-                            conn.sendall(json.dumps(response).encode("utf-8"))
-                            continue
-
                     service_type = json_obj.get("service")
 
                     response_ChatMsg = None
 
                     if service_type == "ai_reply":
-                        response_ChatMsg = self.handle_ai_message(userId, json_obj)
+                        response_ChatMsg = self.handle_ai_message(client_key, json_obj)
                     elif service_type == "request_news":
                         response_ChatMsg = self.handle_news_query(json_obj)
                     elif service_type == "none":
@@ -204,7 +155,7 @@ class LuamaServer:
             conn.close()
 
     # 模組一：AI 回應模擬
-    def handle_ai_message(self, userId, json_message):
+    def handle_ai_message(self, client_key, json_message):
         user_from = json_message.get("sender", "")
         AI_Agent = json_message.get("receiver")
         msg_type = MessageType(json_message.get("type", "text"))
@@ -213,12 +164,12 @@ class LuamaServer:
         print(f"📩 收到 prompt：{user_prompt}")
 
         if msg_type == MessageType.SYSTEM:
-            self._handle_aiReply_SYSTEM(userId, json_message)
+            self._handle_aiReply_SYSTEM(client_key, json_message)
         else:
             # 取得該 client 的所有 model histories
-            if userId not in self.client_histories:
-                self.client_histories[userId] = {}
-            model_histories = self.client_histories[userId]
+            if client_key not in self.client_histories:
+                self.client_histories[client_key] = {}
+            model_histories = self.client_histories[client_key]
 
             # 如果這個 model 沒有 history，先初始化
             if AI_Agent not in model_histories:
@@ -517,93 +468,3 @@ if __name__ == "__main__":
 
         else:
             Server.broadcast(cmd)
-
-    # listandSave_ollama_models_to_json,
-    # is_base64_image,
-    # select_AImodel,
-    # query_ollama,
-    # clear_dpseek_think_tag,
-#     # SYSTEM_PROMPT,
-# class AIMessageHandler:
-
-#     def __init__(self, systemPrompt):
-#         self.SystemPrompt = systemPrompt
-
-
-#     def query_ollama(self , prompt, model="llama3.2:latest"):
-#         payload = {"model": model, "prompt": prompt, "stream": False}
-
-#         url = "http://localhost:11434/api/generate"
-#         response = requests.post(url, json=payload)
-#         if response.status_code == 200:
-#             if model == "deepseek-r1:7b":
-#                 return self.clear_dpseek_think_tag(response.json()["response"])
-#             return response.json()["response"]
-#         else:
-#             return f"[Ollama 錯誤] {response.status_code}: {response.text}"
-
-#     def clear_dpseek_think_tag(self ,dpseek_response):
-#         # 移除 <think>...</think> 標籤與其中內容
-#         cleaned_string = re.sub(r"<think>.*?</think>", "", dpseek_response, flags=re.DOTALL)
-#         cleaned_string = cleaned_string.strip()
-#         return cleaned_string
-
-#     def select_AImodel(self , model_name):
-#         file_path = "Server/aimodel_list.json"
-
-#         # 檢查檔案是否存在
-#         if not os.path.exists(file_path):
-#             print("⚠️ 找不到 {file_path}檔案。")
-#             return None
-
-#         # 讀取模型清單
-#         try:
-#             with open(file_path, "r", encoding="utf-8") as f:
-#                 models = json.load(f)
-#         except json.JSONDecodeError:
-#             print("⚠️ aimodel_list.json 格式錯誤。")
-#             return None
-
-#         if not models:
-#             print("⚠️ 模型清單為空。")
-#             return None
-
-#         # 擷取所有模型名稱
-#         model_names = [model["name"] for model in models]
-
-#         # 如果存在就回傳，否則回傳第一個
-#         if model_name in model_names:
-#             return model_name
-#         else:
-#             print(f"⚠️ 未找到指定模型 {model_name}，改為使用第一個模型：{model_names[0]}")
-#             return model_names[0]
-
-
-#     def listandSave_ollama_models_to_json(self ):
-#         url = "http://localhost:11434/api/tags"
-#         output_file = "Server/aimodel_list.json"
-#         try:
-#             response = requests.get(url)
-#             if response.status_code == 200:
-#                 models = response.json().get("models", [])
-#                 if not models:
-#                     print("⚠️ 尚未安裝任何模型。\n")
-#                 else:
-#                     print("✅ 本地可用模型：\n")
-#                     model_list = [{"name": model["name"]} for model in models]
-#                     for m in model_list:
-#                         print(m["name"])
-#                     with open(output_file, "w", encoding="utf-8") as f:
-#                         json.dump(model_list, f, indent=2, ensure_ascii=False)
-#                     print(f"\n📄 模型列表已寫入檔案：{output_file}")
-#             else:
-#                 print(f"❌ 查詢失敗：{response.status_code} - {response.text}")
-#         except requests.exceptions.RequestException as e:
-#             print("❌ 無法連接到 Ollama。請確認是否啟動。\n")
-#             print(str(e))
-
-
-# class NewsHandler:
-
-
-# class ClientManager:

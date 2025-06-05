@@ -3,8 +3,9 @@ import 'dart:convert'; // 用於 JSON 編碼
 import 'package:intl/intl.dart';
 
 enum MessageType { text, image, file, textAndFile, system, request_news }
+// enum MessageType { text, image, file, textAndFile, }
 
-enum ServiceType { ai_reply, request_news, none }
+enum ServiceType { ai_reply, request_news, none, loginRegist }
 
 MessageType whatMsgType(String text, File? image) {
   final hasText = text.isNotEmpty;

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'chatmsg.dart';
+
 class Client {
   String ip;
   int port;

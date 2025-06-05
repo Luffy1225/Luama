@@ -147,10 +147,8 @@ class TUser {
     server.startServer();
   }
 
-  void startClient() async {
-    // client.connectToServer();
-    await client.connectToServer();
-    sendMessage(buildLoginChatMsg());
+  void startClient() {
+    client.connectToServer();
   }
 
   void connect(String ip, String port) {
@@ -198,18 +196,6 @@ class TUser {
   //     email: "Luffy1225",
   //   );
   // }
-  ChatMsg buildLoginChatMsg() {
-    Map<String, dynamic> UserJsonInfo = toJson();
-
-    return ChatMsg(
-      sender: userName,
-      receiver: "LuamaServer",
-      service: ServiceType.loginRegist,
-      type: MessageType.text,
-      content: jsonEncode(UserJsonInfo), // 把User
-      timestamp: GetNowTimeStamp(),
-    );
-  }
 }
 
 enum SortRule { by_ID, by_Name, by_Time }
