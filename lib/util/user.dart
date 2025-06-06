@@ -203,6 +203,7 @@ class TUser {
 
     return ChatMsg(
       sender: userName,
+      senderID: userId,
       receiver: "LuamaServer",
       service: ServiceType.loginRegist,
       type: MessageType.text,

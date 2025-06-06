@@ -8,6 +8,7 @@ import 'util/global_Setting.dart';
 // import 'pages/settingpage.dart';
 import 'pages/serversettingpage.dart';
 import 'pages/chatpage.dart';
+import 'pages/InitialSetupPage.dart';
 import 'pages/nav/nav_chatpage.dart';
 import 'pages/nav/nav_homepage.dart';
 import 'pages/nav/nav_postpage.dart';
@@ -32,7 +33,8 @@ class Luama extends StatelessWidget {
       child: MaterialApp(
         title: 'Luama',
         debugShowCheckedModeBanner: false,
-        home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+        home: InitialSetupPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+        // home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
         // home: StitchDesignPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
       ),
     );
@@ -40,6 +42,10 @@ class Luama extends StatelessWidget {
 }
 
 class Homepage extends StatefulWidget {
+  final TUser? MySelf; // 可為 null
+
+  Homepage({this.MySelf, super.key});
+
   @override
   _HomepageState createState() => _HomepageState();
 }
@@ -47,16 +53,21 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _NavSelectedIndex = 1;
 
-  final TUser MySelf = TUser(
+  late final TUser MySelf; // 實際使用的使用者
+
+  final TUser _defaultMySelf = TUser(
     userId: "1225",
     userName: "Luffy",
     profileImage: "",
     email: "Luffy1225",
   );
+
   final _userManager = UserManager();
 
   @override
   void initState() {
+    // 如果外部傳入的為 null，就用預設值
+    MySelf = widget.MySelf ?? _defaultMySelf;
     MySelf.startClient();
     super.initState();
   }

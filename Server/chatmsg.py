@@ -13,6 +13,8 @@ class MessageType(Enum):
 
 
 class ServiceType(Enum):
+    loginRegist = "loginRegist"
+    SEND_USER_TO_USER = "send_user_to_user"
     AI_REPLY = "ai_reply"
     REQ_NEWS = "request_news"
     NONE = "none"
@@ -44,9 +46,13 @@ class ChatMsg:
         timestamp: str,
         service: ServiceType = ServiceType.NONE,
         type: MessageType = MessageType.TEXT,
+        senderID: str = "",
+        receiverID: str = "",
     ):
         self.sender = sender
+        self.senderID = senderID
         self.receiver = receiver
+        self.receiverID = receiverID
         self.service = service
         self.type = type
         self.content = content
@@ -55,7 +61,9 @@ class ChatMsg:
     def to_json(self) -> dict:
         return {
             "sender": self.sender,
+            "senderID": self.senderID,
             "receiver": self.receiver,
+            "receiverID": self.receiverID,
             "service": self.service.value,
             "type": self.type.value,
             "content": self.content,
@@ -65,12 +73,14 @@ class ChatMsg:
     @staticmethod
     def from_json(json_data: dict):
         return ChatMsg(
-            sender=json_data["sender"],
-            receiver=json_data["receiver"],
-            service=json_data["service"],
+            sender=json_data.get("sender", ""),
+            senderID=json_data.get("senderID", ""),
+            receiver=json_data.get("receiver", ""),
+            receiverID=json_data.get("receiverID", ""),
+            service=ServiceType(json_data.get("service", "none")),
             type=MessageType(json_data.get("type", "text")),
-            content=json_data["content"],
-            timestamp=json_data["timestamp"],
+            content=json_data.get("content", ""),
+            timestamp=json_data.get("timestamp", ""),
         )
 
 
@@ -78,12 +88,13 @@ def chat_msg_to_string(msg: ChatMsg) -> str:
     return json.dumps(msg.to_json(), ensure_ascii=False)
 
 
-if __name__ == "__main__":
-    msg = ChatMsg(
-        sender="Me",
-        receiver="TargetUser",
-        content="Hello",
-        timestamp=get_timestamp(),
-        type=what_msg_type("Hello"),
-    )
-    print(chat_msg_to_string(msg))
+# if __name__ == "__main__":
+
+# msg = ChatMsg(
+#     sender="Me",
+#     receiver="TargetUser",
+#     content="Hello",
+#     timestamp=get_timestamp(),
+#     type=what_msg_type("Hello"),
+# )
+# print(chat_msg_to_string(msg))

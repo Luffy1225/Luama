@@ -91,11 +91,15 @@ class _ChatPageState extends State<ChatPage> {
     ServiceType _service = ServiceType.none;
     if (TargetUser.isAIAgent) {
       _service = ServiceType.ai_reply;
+    } else {
+      _service = ServiceType.send_user_to_user;
     }
 
     ChatMsg message = ChatMsg(
       sender: SelfUser.userName,
+      senderID: SelfUser.userId,
       receiver: TargetUser.userName,
+      receiverID: TargetUser.userId,
       service: _service,
       type: whatMsgType(text, _selectedImage),
       content: text,
@@ -394,7 +398,9 @@ class _ChatPageState extends State<ChatPage> {
     // TODO
     ChatMsg Resetmessage = ChatMsg(
       sender: SelfUser.userName,
+      senderID: SelfUser.userId,
       receiver: TargetUser.userName,
+      receiverID: TargetUser.userId,
       service: ServiceType.ai_reply,
       type: MessageType.system,
       content: "Reset",
