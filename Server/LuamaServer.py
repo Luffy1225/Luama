@@ -193,12 +193,11 @@ class LuamaServer:
                         # response_ChatMsg = {"error": "未知的 type"}
 
                     if response_ChatMsg is not None:
-
                         response_ChatMsg_Str = chat_msg_to_string(response_ChatMsg)
                         print(response_ChatMsg_Str)
                         conn.sendall(response_ChatMsg_Str.encode("utf-8"))
-                    else:
-                        print(f"response_ChatMsg 為 None")
+                    # else:
+                    #     # print(f"response_ChatMsg 為 None")
 
                 except json.JSONDecodeError:
                     conn.sendall(json.dumps({"error": "無法解析 JSON"}).encode("utf-8"))

@@ -54,34 +54,53 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {}); // 輸入框框有值 觸發 UI 更新
     });
 
+    widget.userManager.addListener(_updateChatHistory);
+
     // SelfUser.startClient();
 
-    originalOnMessageReceived = (messageString) {
-      try {
-        // 將 JSON 字串轉換成 ChatMessage 物件
-        final jsonData = jsonDecode(messageString);
-        final chatmsg = ChatMsg.fromJson(jsonData);
+    // originalOnMessageReceived = (messageString) {
+    //   try {
+    //     // 將 JSON 字串轉換成 ChatMessage 物件
+    //     final jsonData = jsonDecode(messageString);
+    //     final chatmsg = ChatMsg.fromJson(jsonData);
 
-        print(jsonData);
+    //     print(jsonData);
 
-        // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
-        setState(() {
-          _JSON_ChatHistory.add(chatmsg);
-        });
+    //     // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
+    //     setState(() {
+    //       _JSON_ChatHistory.add(chatmsg);
+    //     });
 
-        Future.delayed(Duration(milliseconds: 100), () {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        });
-      } catch (e) {
-        print("JSON parsing error: $e");
-      }
-    };
+    //     Future.delayed(Duration(milliseconds: 100), () {
+    //       _scrollController.animateTo(
+    //         _scrollController.position.maxScrollExtent,
+    //         duration: Duration(milliseconds: 300),
+    //         curve: Curves.easeOut,
+    //       );
+    //     });
+    //   } catch (e) {
+    //     print("JSON parsing error: $e");
+    //   }
+    // };
 
-    SelfUser.onMessageReceived = originalOnMessageReceived;
+    // SelfUser.onMessageReceived = originalOnMessageReceived;
+  }
+
+  void _updateChatHistory() {
+    if (!mounted) return; // 如果已經 dispose，直接跳過
+
+    setState(() {
+      _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userId);
+    });
+
+    // 自動滾到最底
+    Future.delayed(Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   void _sendMessage() {
@@ -132,7 +151,7 @@ class _ChatPageState extends State<ChatPage> {
     final appColors = AppColorsProvider.of(context);
 
     return Scaffold(
-      backgroundColor: appColors.scaffoldBackground,
+      backgroundColor: appColors.ScaffoldBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -215,7 +234,7 @@ class _ChatPageState extends State<ChatPage> {
                             child: Text(
                               _formatTimeLabel(currentTime),
                               style: TextStyle(
-                                color: appColors.timeTextColor,
+                                color: appColors.TimeTextColor,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -245,7 +264,7 @@ class _ChatPageState extends State<ChatPage> {
 
             // 輸入框區域
             Container(
-              color: appColors.inputAreaBackground,
+              color: appColors.InputAreaBackground,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
@@ -278,13 +297,13 @@ class _ChatPageState extends State<ChatPage> {
                         onTap: hasText ? _sendMessage : OpenSSTandTTSpage,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: appColors.sendButtonBackground,
+                            color: appColors.SendButtonBackground,
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(12),
                           child: Icon(
                             hasText ? Icons.arrow_upward : Icons.mic,
-                            color: appColors.sendButtonIconColor,
+                            color: appColors.SendButtonIconColor,
                             size: 20,
                           ),
                         ),
@@ -337,12 +356,12 @@ class _ChatPageState extends State<ChatPage> {
         isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start;
     final bubbleColor =
         isSender
-            ? appColors.chatBubbleSender_BGColor
-            : appColors.chatBubbleReceiver_BGColor;
+            ? appColors.ChatBubbleSender_BGColor
+            : appColors.ChatBubbleReceiver_BGColor;
     final textColor =
         isSender
-            ? appColors.chatBubbleSender_TextColor
-            : appColors.chatBubbleReceiver_TextColor;
+            ? appColors.ChatBubbleSender_TextColor
+            : appColors.ChatBubbleReceiver_TextColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

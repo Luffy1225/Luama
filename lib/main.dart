@@ -68,6 +68,7 @@ class _HomepageState extends State<Homepage> {
   void initState() {
     // 如果外部傳入的為 null，就用預設值
     MySelf = widget.MySelf ?? _defaultMySelf;
+    _userManager.setupOnMessageReceived(MySelf);
     MySelf.startClient();
     super.initState();
   }
@@ -78,7 +79,7 @@ class _HomepageState extends State<Homepage> {
 
     return Scaffold(
       // backgroundColor: const Color(0xFFF8FBFA),
-      backgroundColor: appColors.scaffoldBackground,
+      backgroundColor: appColors.ScaffoldBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -119,14 +120,14 @@ class _HomepageState extends State<Homepage> {
                 decoration: InputDecoration(
                   hintText: 'Search',
                   hintStyle: TextStyle(
-                    color: appColors.searchBarHintColor,
+                    color: appColors.SearchBarHintColor,
                     fontSize: 18,
                   ),
                   filled: true,
-                  fillColor: appColors.searchBarHintBackground,
+                  fillColor: appColors.SearchBarHintBackground,
                   prefixIcon: Icon(
                     Icons.search,
-                    color: appColors.searchBarLeftIcon,
+                    color: appColors.SearchBarLeftIcon,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -168,32 +169,32 @@ class _HomepageState extends State<Homepage> {
       // 底部導覽欄
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _NavSelectedIndex,
-        backgroundColor: appColors.navigationBarBackground,
+        backgroundColor: appColors.NavigationBarBackground,
         onTap: (int index) {
           setState(() {
             _NavSelectedIndex = index;
           });
         },
-        selectedItemColor: appColors.navigationBarSelect,
-        unselectedItemColor: appColors.navigationBarUnselect,
+        selectedItemColor: appColors.NavigationBarSelect,
+        unselectedItemColor: appColors.NavigationBarUnselect,
         items: [
           BottomNavigationBarItem(
-            backgroundColor: appColors.navigationBarBackground,
+            backgroundColor: appColors.NavigationBarBackground,
             icon: Icon(Icons.home_rounded), // 替代 home，更有儀表板感
             label: '主頁',
           ),
           BottomNavigationBarItem(
-            backgroundColor: appColors.navigationBarBackground,
+            backgroundColor: appColors.NavigationBarBackground,
             icon: Icon(Icons.forum_outlined), // 替代 chat_bubble_outline，較有「聊天室」感
             label: '聊天',
           ),
           BottomNavigationBarItem(
-            backgroundColor: appColors.navigationBarBackground,
+            backgroundColor: appColors.NavigationBarBackground,
             icon: Icon(Icons.article_outlined), // 替代 settings，更像是貼文內容
             label: '貼文',
           ),
           BottomNavigationBarItem(
-            backgroundColor: appColors.navigationBarBackground,
+            backgroundColor: appColors.NavigationBarBackground,
             icon: Icon(Icons.account_circle_outlined), // 替代 person，更立體、更個人化
             label: '個人頁面',
           ),

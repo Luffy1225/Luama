@@ -57,7 +57,7 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
     final appColors = AppColorsProvider.of(context);
 
     return Scaffold(
-      backgroundColor: appColors.scaffoldBackground,
+      backgroundColor: appColors.ScaffoldBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -201,7 +201,7 @@ class _ServerSettingPageState extends State<ServerSettingPage> {
         children: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: appColors.buttonBG,
+              backgroundColor: appColors.ButtonBGColor,
               foregroundColor: appColors.PrimaryText,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),

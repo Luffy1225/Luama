@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 
 import 'package:luama/util/user.dart';
 import '../main.dart';
 import '../util/Page_animation.dart';
+import '../util/app_colors.dart';
 
 class InitialSetupPage extends StatelessWidget {
   InitialSetupPage({super.key});
@@ -11,15 +13,19 @@ class InitialSetupPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController ipController = TextEditingController();
+  final TextEditingController portController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF122118),
+      backgroundColor: appColors.ScaffoldBackground,
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
               child: Center(
                 child: Text(
@@ -27,7 +33,7 @@ class InitialSetupPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: appColors.TopBar_Title,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -46,7 +52,7 @@ class InitialSetupPage extends StatelessWidget {
                           width: 128,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            image: const DecorationImage(
+                            image: DecorationImage(
                               image: NetworkImage(
                                 'https://lh3.googleusercontent.com/aida-public/AB6AXuAWjASnsmvnLF9LkSlwqzW3HnDa_PiyZ1wPqQweTedCq9__iJFrF4z8xLyYc4HiEDSqxh0Zk4uC5pqY0AsLOW1pv8P7zx1qT4RBVkDo4WuKIVBRE9B0ljPkzqtgQo2UnZJ3X5lMXD4KRd5MVv1nMs-nFm4sHqohzYElBQhIaF_fvnH3QUjTl1WsJPwRzJrz9BDdn7FKZxqbtbeT25CWwE22IQjnbwULWqCYd6TgaUkekqTujsqX7R-W7Q0kJuWYQrznCvGjwOggITM',
                               ),
@@ -55,23 +61,23 @@ class InitialSetupPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           'Set Personal Information',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: appColors.PrimaryText,
                             letterSpacing: -0.015,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Please provide your details to personalize your experience.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF96C5A8),
+                            color: appColors.PrimaryText,
                           ),
                         ),
                       ],
@@ -92,13 +98,18 @@ class InitialSetupPage extends StatelessWidget {
                       emailController: emailController,
                     ),
                     const SizedBox(height: 24),
+                    _FoldRegion(
+                      ipController: ipController,
+                      portController: portController,
+                    ),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF39E079),
-                          foregroundColor: const Color(0xFF122118),
+                          backgroundColor: appColors.TextBox_Background,
+                          foregroundColor: appColors.PrimaryText,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -160,22 +171,24 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF264532),
+        color: appColors.TextBox_Background,
         borderRadius: BorderRadius.circular(16),
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: appColors.SettingTextColor),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 20,
           ),
           hintText: placeholder,
-          hintStyle: const TextStyle(color: Color(0xFF96C5A8)),
+          hintStyle: TextStyle(color: appColors.SettingTextHintColor),
           border: InputBorder.none,
         ),
       ),
@@ -221,16 +234,18 @@ class _CheckboxSettingState extends State<_CheckboxSetting> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: const BoxDecoration(color: Color(0xFF122118)),
+      decoration: BoxDecoration(color: appColors.ScaffoldBackground),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'Randomize Settings',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: appColors.SettingTextColor, fontSize: 16),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -242,14 +257,77 @@ class _CheckboxSettingState extends State<_CheckboxSetting> {
                 _applyRandomInfo(_checked);
               });
             },
-            checkColor: const Color(0xFF122118),
-            activeColor: const Color(0xFF39E079),
-            side: const BorderSide(color: Color(0xFF366347), width: 2),
+            checkColor: appColors.CheckBox_CheckColor,
+            activeColor: appColors.CheckBox_ActiveColor,
+            side: BorderSide(color: appColors.CheckBox_BorderColor, width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FoldRegion extends StatefulWidget {
+  final TextEditingController ipController;
+  final TextEditingController portController;
+
+  const _FoldRegion({
+    required this.ipController,
+    required this.portController,
+    super.key,
+  });
+
+  @override
+  State<_FoldRegion> createState() => _FoldRegionState();
+}
+
+class _FoldRegionState extends State<_FoldRegion> {
+  @override
+  Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
+    return Material(
+      borderRadius: BorderRadius.circular(16),
+      color: const Color(0xFF264532),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(
+            'Luama Server Setting',
+            style: TextStyle(
+              color: appColors.PrimaryText,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          collapsedIconColor: Colors.white,
+          iconColor: Colors.white,
+          backgroundColor: const Color(0xFF122118),
+          collapsedBackgroundColor: Colors.transparent,
+          childrenPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 8,
+          ),
+          children: [
+            _InputField(
+              placeholder: 'Server IP Address',
+              controller: widget.ipController,
+            ),
+            _InputField(
+              placeholder: 'Server Port',
+              controller: widget.portController,
+            ),
+          ],
+        ),
       ),
     );
   }

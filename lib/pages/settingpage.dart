@@ -43,7 +43,7 @@ class _SettingPageState extends State<SettingPage> {
     final appColors = AppColorsProvider.of(context);
 
     return Scaffold(
-      backgroundColor: appColors.scaffoldBackground,
+      backgroundColor: appColors.ScaffoldBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -91,8 +91,8 @@ class _SettingPageState extends State<SettingPage> {
               ),
               value: _notifications,
               activeColor: Colors.white,
-              activeTrackColor: appColors.switchActiveTrack,
-              inactiveTrackColor: appColors.switchInactiveTrack,
+              activeTrackColor: appColors.SwitchActiveTrack,
+              inactiveTrackColor: appColors.SwitchInactiveTrack,
               onChanged: (bool value) {
                 setState(() {
                   _notifications = value;
@@ -110,8 +110,8 @@ class _SettingPageState extends State<SettingPage> {
               ),
               value: _darkMode,
               activeColor: Colors.white,
-              activeTrackColor: appColors.switchActiveTrack,
-              inactiveTrackColor: appColors.switchInactiveTrack,
+              activeTrackColor: appColors.SwitchActiveTrack,
+              inactiveTrackColor: appColors.SwitchInactiveTrack,
               onChanged: (bool value) {
                 setState(() {
                   _darkMode = value;
@@ -266,7 +266,7 @@ class _SettingPageState extends State<SettingPage> {
         children: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: appColors.buttonBG,
+              backgroundColor: appColors.ButtonBGColor,
               foregroundColor: appColors.PrimaryText,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),

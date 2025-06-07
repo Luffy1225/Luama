@@ -24,8 +24,8 @@ class TUser {
   late Server server;
   late Client client;
 
-  static const DEFAULT_IP = "0.tcp.ngrok.io";
-  static const int DEFAULT_PORT = 14728;
+  static const DEFAULT_IP = "4.tcp.ngrok.io";
+  static const int DEFAULT_PORT = 11419;
 
   // 建構子
   TUser({
@@ -215,7 +215,7 @@ class TUser {
 
 enum SortRule { by_ID, by_Name, by_Time }
 
-class UserManager {
+class UserManager extends ChangeNotifier {
   List<TUser> users = [];
 
   // 用 userId 作為 key，對應該使用者的聊天紀錄
@@ -287,7 +287,33 @@ class UserManager {
       userChatHistories[userId] = [];
     }
     userChatHistories[userId]!.add(msg);
+    notifyListeners();
   }
+
+  void setupOnMessageReceived(TUser user) {
+    /// NEWWWW
+    try {
+      user.onMessageReceived = (messageString) {
+        final jsonData = jsonDecode(messageString);
+        final chatmsg = ChatMsg.fromJson(jsonData);
+        addChatMessage(user.userId, chatmsg);
+      };
+    } catch (e) {
+      print("JSON parsing error: $e");
+    }
+  }
+
+  //  void setupOnMessageReceived(TUser user) {
+  //   user.onMessageReceived = (messageString) {
+  //     try {
+  //       final jsonData = jsonDecode(messageString);
+  //       final chatmsg = ChatMsg.fromJson(jsonData);
+  //       _chatHistories.putIfAbsent(chatmsg.senderId, () => []).add(chatmsg);
+  //       notifyListeners();
+  //     } catch (e) {
+  //       print("JSON parsing error: $e");
+  //     }
+  //   };
 
   List<ChatMsg> getChatHistory(String userId) {
     if (!userChatHistories.containsKey(userId)) {

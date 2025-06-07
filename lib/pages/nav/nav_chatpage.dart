@@ -84,14 +84,14 @@ class ContactItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: appColors.contactItemUserName,
+                      color: appColors.ContactItemUserName,
                     ),
                   ),
                   Text(
                     "Message example",
                     style: TextStyle(
                       fontSize: 14,
-                      color: appColors.contactItemMessage,
+                      color: appColors.ContactItemMessage,
                     ),
                   ),
                 ],

@@ -26,46 +26,56 @@ class AppColors {
   final Color PrimaryText;
 
   //mainpage
-  final Color scaffoldBackground;
+  final Color ScaffoldBackground;
   final Color TopBar_Title;
   final Color TopBar_IconColor;
 
-  final Color searchBarHintBackground;
-  final Color searchBarHintColor;
-  final Color searchBarLeftIcon;
+  final Color SearchBarHintBackground;
+  final Color SearchBarHintColor;
+  final Color SearchBarLeftIcon;
 
-  final Color contactItemUserName;
-  final Color contactItemMessage;
+  final Color ContactItemUserName;
+  final Color ContactItemMessage;
 
-  final Color navigationBarBackground;
-  final Color navigationBarSelect;
-  final Color navigationBarUnselect;
+  final Color NavigationBarBackground;
+  final Color NavigationBarSelect;
+  final Color NavigationBarUnselect;
 
   //chatpage
-  final Color timeTextColor;
+  final Color TimeTextColor;
 
-  final Color chatBubbleNameColor;
-  final Color chatBubbleSender_BGColor;
-  final Color chatBubbleSender_TextColor;
+  final Color ChatBubbleNameColor;
+  final Color ChatBubbleSender_BGColor;
+  final Color ChatBubbleSender_TextColor;
 
-  final Color chatBubbleReceiver_BGColor;
-  final Color chatBubbleReceiver_TextColor;
+  final Color ChatBubbleReceiver_BGColor;
+  final Color ChatBubbleReceiver_TextColor;
 
-  final Color inputAreaBackground;
+  final Color InputAreaBackground;
   final Color TextBox_Background;
   final Color TextBoxHint_Background;
 
-  final Color sendButtonBackground;
-  final Color sendButtonIconColor;
+  final Color SendButtonBackground;
+  final Color SendButtonIconColor;
 
   // Setting page
   final Color SettingTextColor;
   final Color SettingTextHintColor;
 
-  final Color switchActiveTrack;
-  final Color switchInactiveTrack;
+  final Color SwitchActiveTrack;
+  final Color SwitchInactiveTrack;
 
-  final Color buttonBG;
+  final Color ButtonBGColor;
+
+  // CheckBox
+  final Color CheckBox_CheckColor;
+  final Color CheckBox_ActiveColor;
+  final Color CheckBox_BorderColor;
+
+  // FoldRegion
+  final Color FoldRegion_BGColor;
+  final Color CheckBox_ActiveColor;
+  final Color CheckBox_BorderColor;
 
   AppColors({
     required this.Primary_Color,
@@ -99,40 +109,46 @@ class AppColors {
     Color? switchActiveTrack,
     Color? switchInactiveTrack,
     Color? buttonBG,
-  }) : scaffoldBackground = scaffoldBackground ?? const Color(0xFFFFFFFF),
+    Color? checkBox_CheckColor,
+    Color? checkBox_ActiveColor,
+    Color? checkBox_BorderColor,
+  }) : ScaffoldBackground = scaffoldBackground ?? const Color(0xFFFFFFFF),
        TopBar_Title = TopBar_Title ?? const Color(0xFF0E1A13),
        TopBar_IconColor = TopBar_IconColor ?? const Color(0xFF0E1A13),
-       searchBarHintBackground =
+       SearchBarHintBackground =
            searchBarHintBackground ?? const Color(0xFFE8F2EC),
-       searchBarHintColor = searchBarHintColor ?? const Color(0xFF51946B),
-       searchBarLeftIcon = searchBarLeftIcon ?? const Color(0xFF51946B),
-       contactItemUserName = contactItemUserName ?? const Color(0xff0d1912),
-       contactItemMessage = contactItemMessage ?? const Color(0xFF51946B),
-       navigationBarBackground =
+       SearchBarHintColor = searchBarHintColor ?? const Color(0xFF51946B),
+       SearchBarLeftIcon = searchBarLeftIcon ?? const Color(0xFF51946B),
+       ContactItemUserName = contactItemUserName ?? const Color(0xff0d1912),
+       ContactItemMessage = contactItemMessage ?? const Color(0xFF51946B),
+       NavigationBarBackground =
            navigationBarBackground ?? const Color(0xff1c3024),
-       navigationBarSelect = navigationBarSelect ?? const Color(0xff0d1912),
-       navigationBarUnselect = navigationBarUnselect ?? const Color(0xFF51946B),
-       timeTextColor = timeTextColor ?? const Color(0xFF688272),
-       chatBubbleNameColor = chatBubbleNameColor ?? const Color(0xFF688272),
-       chatBubbleSender_BGColor =
+       NavigationBarSelect = navigationBarSelect ?? const Color(0xff0d1912),
+       NavigationBarUnselect = navigationBarUnselect ?? const Color(0xFF51946B),
+       TimeTextColor = timeTextColor ?? const Color(0xFF688272),
+       ChatBubbleNameColor = chatBubbleNameColor ?? const Color(0xFF688272),
+       ChatBubbleSender_BGColor =
            chatBubbleSender_BGColor ?? const Color(0xFF94e0b1),
-       chatBubbleSender_TextColor =
+       ChatBubbleSender_TextColor =
            chatBubbleSender_TextColor ?? const Color(0xFF121714),
-       chatBubbleReceiver_BGColor =
+       ChatBubbleReceiver_BGColor =
            chatBubbleReceiver_BGColor ?? const Color(0xFFF1F4F2),
-       chatBubbleReceiver_TextColor =
+       ChatBubbleReceiver_TextColor =
            chatBubbleReceiver_TextColor ?? const Color(0xFF121714),
-       inputAreaBackground = inputAreaBackground ?? const Color(0xFFF1F4F2),
+       InputAreaBackground = inputAreaBackground ?? const Color(0xFFF1F4F2),
        TextBox_Background = TextBox_Background ?? const Color(0xFFFFFFFF),
        TextBoxHint_Background =
            TextBoxHint_Background ?? const Color(0xff9cbfa8),
-       sendButtonBackground = sendButtonBackground ?? const Color(0xFF121714),
-       sendButtonIconColor = sendButtonIconColor ?? const Color(0xFFFFFFFF),
+       SendButtonBackground = sendButtonBackground ?? const Color(0xFF121714),
+       SendButtonIconColor = sendButtonIconColor ?? const Color(0xFFFFFFFF),
        SettingTextColor = SettingTextColor ?? const Color(0xFF121714),
        SettingTextHintColor = SettingTextHintColor ?? const Color(0xFF688272),
-       switchActiveTrack = switchActiveTrack ?? const Color(0xFF79D29B),
-       switchInactiveTrack = switchInactiveTrack ?? const Color(0xFFF1F4F2),
-       buttonBG = buttonBG ?? const Color(0xfff2f5f2);
+       SwitchActiveTrack = switchActiveTrack ?? const Color(0xFF79D29B),
+       SwitchInactiveTrack = switchInactiveTrack ?? const Color(0xFFF1F4F2),
+       ButtonBGColor = buttonBG ?? const Color(0xfff2f5f2),
+       CheckBox_CheckColor = checkBox_CheckColor ?? const Color(0xFF122118),
+       CheckBox_ActiveColor = checkBox_ActiveColor ?? const Color(0xFF39E079),
+       CheckBox_BorderColor = checkBox_BorderColor ?? const Color(0xFF366347);
 }
 
 AppColors LightTheme = AppColors(
@@ -167,6 +183,9 @@ AppColors LightTheme = AppColors(
   switchActiveTrack: const Color(0xff94e0b0),
   switchInactiveTrack: const Color(0xfff2f5f2),
   buttonBG: const Color(0xfff2f5f2),
+  checkBox_CheckColor: const Color(0xFF122118),
+  checkBox_ActiveColor: const Color(0xff52946b),
+  checkBox_BorderColor: const Color(0xff94e0b0),
 );
 
 AppColors DarkTheme = AppColors(
@@ -201,4 +220,7 @@ AppColors DarkTheme = AppColors(
   switchActiveTrack: const Color(0xff94e0b0),
   switchInactiveTrack: const Color(0xff2b4033),
   buttonBG: const Color(0xff294033),
+  checkBox_CheckColor: const Color(0xFF122118),
+  checkBox_ActiveColor: const Color(0xFF39E079),
+  checkBox_BorderColor: const Color(0xFF366347),
 );
