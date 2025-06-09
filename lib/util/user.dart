@@ -228,33 +228,33 @@ class UserManager extends ChangeNotifier {
   void loadSampleUser() {
     users = [
       TUser(
-        userId: "0000",
+        userId: "0001",
         userName: "llama3.2:latest",
         profileImage: "",
         email: "",
         isAIAgent: true,
       ),
       TUser(
-        userId: "0001",
+        userId: "0002",
         userName: "deepseek-r1:7b",
         profileImage: "",
         email: "",
         isAIAgent: true,
       ),
-      TUser(userId: "0002", userName: "Yuniko", profileImage: "", email: ""),
-      TUser(userId: "0003", userName: "Nami", profileImage: "", email: ""),
-      TUser(userId: "0004", userName: "Usopp", profileImage: "", email: ""),
-      TUser(userId: "0005", userName: "Sanji", profileImage: "", email: ""),
-      TUser(userId: "0006", userName: "Chopper", profileImage: "", email: ""),
-      TUser(userId: "0007", userName: "Robin", profileImage: "", email: ""),
-      TUser(userId: "0008", userName: "Franky", profileImage: "", email: ""),
-      TUser(userId: "0009", userName: "Brook", profileImage: "", email: ""),
-      TUser(userId: "0010", userName: "Jinbe", profileImage: "", email: ""),
-      TUser(userId: "0011", userName: "Vivi", profileImage: "", email: ""),
-      TUser(userId: "0012", userName: "Carrot", profileImage: "", email: ""),
-      TUser(userId: "0013", userName: "Yamato", profileImage: "", email: ""),
-      TUser(userId: "0014", userName: "Bonney", profileImage: "", email: ""),
-      TUser(userId: "0015", userName: "Hancock", profileImage: "", email: ""),
+      TUser(userId: "0003", userName: "Yuniko", profileImage: "", email: ""),
+      TUser(userId: "0004", userName: "Nami", profileImage: "", email: ""),
+      TUser(userId: "0005", userName: "Usopp", profileImage: "", email: ""),
+      TUser(userId: "0006", userName: "Sanji", profileImage: "", email: ""),
+      TUser(userId: "0007", userName: "Chopper", profileImage: "", email: ""),
+      TUser(userId: "0008", userName: "Robin", profileImage: "", email: ""),
+      TUser(userId: "0009", userName: "Franky", profileImage: "", email: ""),
+      TUser(userId: "0000", userName: "Brook", profileImage: "", email: ""),
+      TUser(userId: "0011", userName: "Jinbe", profileImage: "", email: ""),
+      TUser(userId: "0012", userName: "Vivi", profileImage: "", email: ""),
+      TUser(userId: "0013", userName: "Carrot", profileImage: "", email: ""),
+      TUser(userId: "0014", userName: "Yamato", profileImage: "", email: ""),
+      TUser(userId: "0015", userName: "Bonney", profileImage: "", email: ""),
+      TUser(userId: "0016", userName: "Hancock", profileImage: "", email: ""),
     ];
   }
 
@@ -296,7 +296,9 @@ class UserManager extends ChangeNotifier {
       user.onMessageReceived = (messageString) {
         final jsonData = jsonDecode(messageString);
         final chatmsg = ChatMsg.fromJson(jsonData);
-        addChatMessage(user.userId, chatmsg);
+        addChatMessage(chatmsg.senderID, chatmsg);
+        // addChatMessage(chatmsg.receiver, chatmsg);
+        // addChatMessage(user.userId, chatmsg); //感覺是放
       };
     } catch (e) {
       print("JSON parsing error: $e");

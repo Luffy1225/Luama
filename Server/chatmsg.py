@@ -17,6 +17,9 @@ class ServiceType(Enum):
     SEND_USER_TO_USER = "send_user_to_user"
     AI_REPLY = "ai_reply"
     REQ_NEWS = "request_news"
+    UPDATE_USER = "update_user"
+    REQ_POST = "request_post"
+    Build_POST = "build_post"
     NONE = "none"
 
 

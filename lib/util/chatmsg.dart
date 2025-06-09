@@ -12,6 +12,8 @@ enum ServiceType {
   none,
   loginRegist,
   send_user_to_user,
+  request_post,
+  build_post,
 }
 
 // USER_TO_USER = "send_user_to_user"

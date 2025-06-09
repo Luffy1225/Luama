@@ -6,6 +6,9 @@ import json
 import os
 import datetime
 
+# Start
+# ngrok tcp 50007
+
 
 # import Server.AIManager as AIManager
 
@@ -99,6 +102,7 @@ class LuamaServer:
     def broadcast(self, message):
         chatmsg = ChatMsg(
             sender=self.hostname,
+            senderID=intID_to_strID(0),  # 這裡的 ID 可以是 0 或其他預設值
             receiver="all",
             content=message,
             service=ServiceType.NONE,
@@ -214,7 +218,7 @@ class LuamaServer:
         AI_Agent = json_message.get("receiver")
         msg_type = MessageType(json_message.get("type", "text"))
         user_prompt = json_message.get("content", "")
-        AI_Agent = select_AImodel(AI_Agent)
+        (AI_Agent, AI_id) = select_AImodel(AI_Agent)
         print(f"📩 收到 prompt：{user_prompt}")
 
         if msg_type == MessageType.SYSTEM:
@@ -245,6 +249,7 @@ class LuamaServer:
 
             chatmsg = ChatMsg(
                 sender=AI_Agent,
+                senderID=AI_id,
                 receiver=user_from,
                 receiverID=user_from_id,
                 content=response,
@@ -276,6 +281,7 @@ class LuamaServer:
 
                 chatmsg = ChatMsg(
                     sender=self.hostname,
+                    senderID=intID_to_strID(0),
                     receiver=user_from,
                     receiverID=user_from_id,
                     content=jsondata,
@@ -374,6 +380,7 @@ class LuamaServer:
             # 尚未註冊且資料不符，拒絕後續操作
             chatmsg = ChatMsg(
                 sender=self.hostname,
+                senderID=intID_to_strID(0),
                 receiver=user_from,
                 receiverID=user_from_id,
                 content=response,
@@ -570,6 +577,10 @@ class LuamaServer:
             print("Key:", key)
             print("Value:", value)
             print("-" * 20)
+
+
+def intID_to_strID(int_id, digit=4):
+    return str(int_id).zfill(digit)
 
 
 if __name__ == "__main__":

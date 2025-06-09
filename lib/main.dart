@@ -136,28 +136,6 @@ class _HomepageState extends State<Homepage> {
                 ),
               ),
             ),
-
-            // Expanded(
-            //   child: ListView.builder(
-            //     itemCount: _userManager.length,
-            //     itemBuilder: (context, index) {
-            //       TUser user = _userManager.getUserbyIndex(index);
-            //       return ContactItem(
-            //         user: user,
-            //         imageUrl:
-            //             'https://lh3.googleusercontent.com/aida-public/AB6AXuBIHF7EUmgGz-GfxYYs8sA6b_AoLTVatLIjS-_6ZJEQUKLoA9wYwtaWAgokmhYdeWm0Wkfqc5PZ1dXDSHVP-Kh_evGtg--cIE2aY2V04HsROqySx5qPFrLoFj06fm7Xtl3k50YzgLbZJQtu7nOQnJjehfbq1yXdRvap9IkB1yoZ3wddjJ5GJYjaqStHd2QqmLrPitZf2e3C7YWge3qlQikYOkd9AMhCezsTGPeReDLg69Xm-HBSbxKQeYvE4nbheCfA4Tq4eg6V_UIt',
-            //         onTap: () {
-            //           Navigator.of(context).push(
-            //             createRoute(
-            //               ChatPage(MySelf, _userManager.getUserbyIndex(index)),
-            //               Anima_Direction.FromRightIn,
-            //             ),
-            //           );
-            //         },
-            //       );
-            //     },
-            //   ),
-            // ),
             Expanded(
               // 中間
               child: _buildBody(),
@@ -212,12 +190,15 @@ class _HomepageState extends State<Homepage> {
           mySelf: MySelf,
           userManager: _userManager,
         ); // 你聊天頁面Widget
-      // case 2:
-      //   return Nav_PostWidget(); // 你貼文頁面Widget
-      // case 3:
-      //   return Nav_ProfileWidget(); // 你個人頁面Widget
+      case 2:
+        return Nav_PostWidget(mySelf: MySelf); // 你貼文頁面Widget
+      case 3:
+        return Nav_ProfileWidget(mySelf: MySelf, userManager: _userManager); //
       default:
-        return Nav_ProfileWidget(); // 你個人頁面Widget
+        return Nav_ProfileWidget(
+          mySelf: MySelf,
+          userManager: _userManager,
+        ); // 你個人頁面Widget
     }
   }
 

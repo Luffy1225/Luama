@@ -91,6 +91,7 @@ class _ChatPageState extends State<ChatPage> {
 
     setState(() {
       _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userId);
+      print("$_JSON_ChatHistory");
     });
 
     // 自動滾到最底

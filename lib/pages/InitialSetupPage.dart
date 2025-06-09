@@ -152,6 +152,11 @@ class InitialSetupPage extends StatelessWidget {
       profileImage: "",
     );
 
+    if (ipController.text != "" || portController.text != "") {
+      myself.SetIP(ipController.text);
+      myself.SetPort(portController.text);
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Homepage(MySelf: myself)),
@@ -288,45 +293,54 @@ class _FoldRegionState extends State<_FoldRegion> {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColorsProvider.of(context);
-
-    return Material(
-      borderRadius: BorderRadius.circular(16),
-      color: const Color(0xFF264532),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          collapsedShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(
-            'Luama Server Setting',
-            style: TextStyle(
-              color: appColors.PrimaryText,
-              fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: appColors.TextBoxHint_Background, // 邊框顏色
+          width: 1, // 邊框寬度
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Material(
+        borderRadius: BorderRadius.circular(16),
+        color: appColors.ScaffoldBackground,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          collapsedIconColor: Colors.white,
-          iconColor: Colors.white,
-          backgroundColor: const Color(0xFF122118),
-          collapsedBackgroundColor: Colors.transparent,
-          childrenPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
-          ),
-          children: [
-            _InputField(
-              placeholder: 'Server IP Address',
-              controller: widget.ipController,
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            _InputField(
-              placeholder: 'Server Port',
-              controller: widget.portController,
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: Text(
+              'Luama Server Setting',
+              style: TextStyle(
+                color: appColors.PrimaryText,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ],
+            collapsedIconColor: appColors.PrimaryText,
+            iconColor: appColors.PrimaryText,
+            // backgroundColor: const Color(0xFF122118),
+            backgroundColor: appColors.ScaffoldBackground,
+            collapsedBackgroundColor: appColors.ScaffoldBackground,
+            childrenPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+            children: [
+              _InputField(
+                placeholder: 'Server IP Address',
+                controller: widget.ipController,
+              ),
+              _InputField(
+                placeholder: 'Server Port',
+                controller: widget.portController,
+              ),
+            ],
+          ),
         ),
       ),
     );
