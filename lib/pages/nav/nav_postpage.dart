@@ -27,17 +27,27 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Threads 範例',
-      home: Scaffold(
-        appBar: AppBar(title: Text("Threads 簡易版")),
-        body: ListView.builder(
-          itemCount: postManager.postList.length,
-          itemBuilder: (context, index) {
-            final post = postManager.postList[index];
-            return PostWidget(post: post);
-          },
-        ),
+    final appColors = AppColorsProvider.of(context);
+
+    return Scaffold(
+      body: ListView.builder(
+        itemCount: postManager.postList.length,
+        itemBuilder: (context, index) {
+          final post = postManager.postList[index];
+          return PostWidget(post: post);
+        },
+      ),
+      backgroundColor: appColors.ScaffoldBackground,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // 點擊 + 處理邏輯
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("點擊了新增貼文按鈕")));
+        },
+        shape: const CircleBorder(),
+        backgroundColor: appColors.ButtonBGColor,
+        child: Icon(Icons.add, color: appColors.TopBar_IconColor),
       ),
     );
   }
@@ -47,15 +57,16 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
     // 建立一筆要求新聞的 ChatMsg
     ChatMsg Req_NewsMsg = ChatMsg(
       sender: widget.mySelf.userName,
+      senderID: widget.mySelf.userId,
       receiver: "NewsServer",
-      service: ServiceType.request_news,
+      service: ServiceType.request_post,
       content: "4",
-      type: MessageType.request_news,
+      type: MessageType.text,
       timestamp: GetNowTimeStamp(),
     );
 
     widget.mySelf.onMessageReceived = (String jsonMessage) {
-      List<dynamic> newsList = [];
+      List<dynamic> postList = [];
       try {
         var json_obj = jsonDecode(jsonMessage);
         final String userFrom = json_obj["sender"] ?? "";
@@ -68,14 +79,16 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
 
         final dynamic contentData = json_obj["content"];
         if (contentData is List) {
-          for (var newsInfo in contentData) {
-            Post news = Post(
-              pictureUrl: newsInfo["pictureUrl"],
-              title: newsInfo["title"],
-              time: newsInfo["time"],
-              newsUrl: newsInfo["newsUrl"],
+          for (var postInfo in contentData) {
+            Post post = Post(
+              userName: postInfo["userName"],
+              userid: postInfo["userid"],
+              title: postInfo["title"],
+              time: postInfo["time"],
+              content: postInfo["content"],
+              comments: postInfo["comments"],
             );
-            NewsManager.addNews(news);
+            postManager.addNews(post);
           }
         } else {
           print("❌ content 欄位不是 List！");
@@ -87,14 +100,16 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
 
       // ✅ 使用 setState 更新畫面
       setState(() {
-        for (var newsInfo in newsList) {
-          Post news = Post(
-            pictureUrl: newsInfo["pictureUrl"],
-            title: newsInfo["title"],
-            time: newsInfo["time"],
-            newsUrl: newsInfo["newsUrl"],
+        for (var postInfo in postList) {
+          Post post = Post(
+            userName: postInfo["userName"],
+            userid: postInfo["userid"],
+            title: postInfo["title"],
+            time: postInfo["time"],
+            content: postInfo["content"],
+            comments: postInfo["comments"],
           );
-          NewsManager.addNews(news);
+          postManager.addNews(post);
         }
       });
     };
@@ -102,20 +117,44 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
   }
 }
 
-class PostWidget extends StatelessWidget {
-  final String post_Username;
-  final String title;
-  final String time;
-  final String content;
+class PostWidget extends StatefulWidget {
+  final Post post;
+  const PostWidget({required this.post, Key? key}) : super(key: key);
 
-  PostWidget({super.key, required Post post})
-    : post_Username = post.post_Username,
-      title = post.title,
-      time = post.time,
-      content = post.content;
+  @override
+  _PostWidgetState createState() => _PostWidgetState();
+}
 
-  int likeAmount = 0;
-  List<Post> comments = [];
+class _PostWidgetState extends State<PostWidget> {
+  late String userName;
+  late String userid;
+  late String title;
+  late String time;
+  late String content;
+  late int likeAmount;
+  late List<Post> comments;
+
+  bool isLiked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    likeAmount = widget.post.likeAmount;
+    userName = widget.post.userName;
+    userid = widget.post.userid;
+    title = widget.post.title;
+    time = widget.post.time;
+    content = widget.post.content;
+    likeAmount = widget.post.likeAmount;
+    comments = widget.post.comments;
+  }
+
+  void _onTapPost(BuildContext context) {
+    // 這邊可以實作點擊後跳轉或顯示詳情的功能
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("點擊了 ${userName} 的貼文")));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +164,7 @@ class PostWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _launchURL(context),
+        onTap: () => _onTapPost(context),
         child: Container(
           decoration: BoxDecoration(
             color: appColors.TextBox_Background,
@@ -143,24 +182,91 @@ class PostWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(pictureUrl, fit: BoxFit.cover),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                /// 使用者名稱
                 Text(
-                  title,
+                  "@$userName #$userid",
                   style: TextStyle(
                     color: appColors.PrimaryText,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+
                 const SizedBox(height: 4),
-                Text(time, style: TextStyle(color: const Color(0xFFA2B3A9))),
+
+                /// 標題
+                if (title.isNotEmpty)
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: appColors.PrimaryText,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                const SizedBox(height: 8),
+
+                /// 內容
+                Text(
+                  content,
+                  style: TextStyle(color: appColors.PrimaryText, fontSize: 16),
+                ),
+
+                const SizedBox(height: 12),
+
+                /// 時間與按讚、留言數
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      time,
+                      style: TextStyle(
+                        color: const Color(0xFFA2B3A9),
+                        fontSize: 12,
+                      ),
+                    ),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min, // 不撐滿 Row 寬度
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              size: 22,
+                              color: isLiked ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isLiked = !isLiked;
+                                likeAmount += isLiked ? 1 : -1;
+                              });
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "$likeAmount",
+                            style: TextStyle(color: Colors.grey),
+                            textAlign:
+                                TextAlign.left, // 可加可不加，對 Row 中 Text 無明顯影響
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.comment, size: 22, color: Colors.grey),
+                          SizedBox(width: 4),
+                          Text(
+                            "${widget.post.comments.length}",
+                            style: TextStyle(color: Colors.grey),
+                            textAlign: TextAlign.left,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -171,19 +277,23 @@ class PostWidget extends StatelessWidget {
 }
 
 class Post {
-  final String post_Username;
+  final String userName;
+  final String userid;
   final String title;
   final String time;
   final String content;
-
-  int likeAmount = 0;
   List<Post> comments = [];
 
+  int likeAmount = 0;
+
   Post({
-    required this.post_Username,
+    required this.userName,
+    required this.userid,
     required this.title,
     required this.time,
     required this.content,
+    this.comments = const [],
+    this.likeAmount = 0,
   });
 
   void addComment(Post comment) {
@@ -194,47 +304,109 @@ class Post {
 class PostManager {
   final List<Post> postList = [
     Post(
-        post_Username: "alice",
-        title: "Flutter 真香",
-        time: "2025-06-09 10:00",
-        content: "最近開始學 Flutter，感覺超有趣！",
-      )
-      ..comments = [
+      userName: "alice",
+      userid: "0324",
+      title: "Flutter 真香",
+      time: "2025-06-09 10:00",
+      content: "最近開始學 Flutter，感覺超有趣！",
+      comments: [
         Post(
-          post_Username: "bob",
+          userName: "bob",
+          userid: "3660",
           title: "",
           time: "2025-06-09 10:05",
           content: "真的！我用它做了一個 app！",
         ),
         Post(
-          post_Username: "charlie",
+          userName: "charlie",
+          userid: "5812",
           title: "",
           time: "2025-06-09 10:10",
           content: "有推薦的教學影片嗎？",
         ),
       ],
+    ),
 
     Post(
-      post_Username: "david",
+      userName: "david",
+      userid: "7781",
       title: "Dart 的 Map 用法分享",
       time: "2025-06-08 21:30",
       content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
     ),
 
     Post(
-        post_Username: "emma",
-        title: "這週學習計畫",
-        time: "2025-06-07 08:20",
-        content: "打算這週完成：1. Flutter UI 2. ListView 操作 3. 接 Firebase！",
-      )
-      ..comments = [
+      userName: "emma",
+      userid: "0321",
+      title: "這週學習計畫",
+      time: "2025-06-07 08:20",
+      content: "打算這週完成：1. Flutter UI 2. ListView 操作 3. 接 Firebase！",
+      comments: [
         Post(
-          post_Username: "frank",
+          userName: "frank",
+          userid: "0317",
           title: "",
           time: "2025-06-07 09:00",
           content: "加油！我也在學類似的內容～",
         ),
       ],
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
+    Post(
+      userName: "david",
+      userid: "7781",
+      title: "Dart 的 Map 用法分享",
+      time: "2025-06-08 21:30",
+      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    ),
   ];
 
   List<Post> getAllNews() {

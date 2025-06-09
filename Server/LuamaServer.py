@@ -184,6 +184,10 @@ class LuamaServer:
                         response_ChatMsg = self.handle_ai_message(json_obj)
                     elif service_type == ServiceType.REQ_NEWS:
                         response_ChatMsg = self.handle_news_query(json_obj)
+                    elif service_type == ServiceType.REQ_POST:
+                        response_ChatMsg = self.handle_post_query(json_obj)
+                    elif service_type == ServiceType.Build_POST:
+                        response_ChatMsg = self.handle_buildPost_query(json_obj)
                     elif service_type == ServiceType.SEND_USER_TO_USER:
                         response_ChatMsg = self.handle_UserToUser_Message(json_obj)
                     elif service_type == ServiceType.loginRegist:
@@ -343,8 +347,6 @@ class LuamaServer:
             user_from_id = json_message.get("senderID", "")
             user_sendto = json_message.get("receiver")
             msg_type = MessageType(json_message.get("type", "text"))
-            amountstr = json_message.get("content", "")
-
             register_info_str = json_message.get("content")
             register_info = json.loads(register_info_str)  # 這裡把字串轉成 dict
             # 嘗試判斷是否為註冊訊息 (包含 Username 和 UserID)
@@ -397,6 +399,63 @@ class LuamaServer:
                     "utf-8"
                 )
             )
+
+    def handle_post_query(self, json_message):
+        user_from = json_message.get("sender", "")
+        user_from_id = json_message.get("senderID", "")
+        user_sendto = json_message.get("receiver")
+        msg_type = MessageType(json_message.get("type", "text"))
+        amountstr = json_message.get("content", "")
+
+        if msg_type == ServiceType.REQ_POST:
+            try:
+                amount = int(amountstr)
+                jsondata = self.GetUpdatePosts(amount)
+
+                chatmsg = ChatMsg(
+                    sender=self.hostname,
+                    senderID=intID_to_strID(0),
+                    receiver=user_from,
+                    receiverID=user_from_id,
+                    content=jsondata,
+                    type=MessageType.TEXT,
+                    timestamp=get_timestamp(),
+                )
+                return chatmsg
+            except (ValueError, TypeError):
+                print("amount 收到為: {amount}, 無法轉換為整數")
+
+    def handle_buildPost_query(self, json_message):
+        if msg_type != ServiceType.Build_POST:
+            return
+
+        user_from = json_message.get("sender", "")
+        user_from_id = json_message.get("senderID", "")
+        user_sendto = json_message.get("receiver")
+        msg_type = MessageType(json_message.get("type", "text"))
+        buildPost_info_str = json_message.get("content")
+        buildPost_info = json.loads(buildPost_info_str)  # 這裡把字串轉成 dict
+
+        post_info = {
+            "userName": buildPost_info["userName"],
+            "userId": buildPost_info["userId"],
+            "title": buildPost_info["title"],
+            "time": buildPost_info["time"],
+            "content": buildPost_info["content"],
+        }
+
+        # TODO: 這裡可以加入更多的 post 資訊，例如圖片、連結等
+        post_info_json = post_info  # 亂寫 這邊還沒好
+
+        # 顯示結果（格式化輸出）
+        if post_info_json:
+            print(json.dumps(post_info_json, ensure_ascii=False, indent=2))
+            with open("Server/Posts.json", "a", encoding="utf-8") as f:
+                json.dump(post_info_json, f, ensure_ascii=False, indent=2)
+            print("已儲存至 Server/Posts.json")
+            return post_info_json
+        else:
+            print("找不到新聞")
 
     def get_client_count(self):
         return len(self.clients)
@@ -497,6 +556,20 @@ class LuamaServer:
         except Exception as e:
             print(f"❌ 無法取得新聞資料：{e}")
             return []
+
+    def GetUpdatePosts(self, amount: int, jsonpath: str = "Server/Posts.json"):
+        need_update = True
+        try:
+            with open(jsonpath, "r", encoding="utf-8") as f:
+                json_data = json.load(f)
+
+            posts_data = json_data.get("posts")
+
+            # ✅ 如果 post 是有效的 list 且有內容，就直接回傳
+            if isinstance(posts_data, list) and len(posts_data) > 0:
+                return posts_data
+        except FileNotFoundError:
+            print(f"⚠️ 檔案 {jsonpath} 不存在，將重新取得資料")
 
     def _get_News(self, amount: int, savepath: str):
         # 限制最大數量為 5
@@ -637,93 +710,3 @@ if __name__ == "__main__":
 
         else:
             Server.broadcast(cmd)
-
-    # listandSave_ollama_models_to_json,
-    # is_base64_image,
-    # select_AImodel,
-    # query_ollama,
-    # clear_dpseek_think_tag,
-#     # SYSTEM_PROMPT,
-# class AIMessageHandler:
-
-#     def __init__(self, systemPrompt):
-#         self.SystemPrompt = systemPrompt
-
-
-#     def query_ollama(self , prompt, model="llama3.2:latest"):
-#         payload = {"model": model, "prompt": prompt, "stream": False}
-
-#         url = "http://localhost:11434/api/generate"
-#         response = requests.post(url, json=payload)
-#         if response.status_code == 200:
-#             if model == "deepseek-r1:7b":
-#                 return self.clear_dpseek_think_tag(response.json()["response"])
-#             return response.json()["response"]
-#         else:
-#             return f"[Ollama 錯誤] {response.status_code}: {response.text}"
-
-#     def clear_dpseek_think_tag(self ,dpseek_response):
-#         # 移除 <think>...</think> 標籤與其中內容
-#         cleaned_string = re.sub(r"<think>.*?</think>", "", dpseek_response, flags=re.DOTALL)
-#         cleaned_string = cleaned_string.strip()
-#         return cleaned_string
-
-#     def select_AImodel(self , model_name):
-#         file_path = "Server/aimodel_list.json"
-
-#         # 檢查檔案是否存在
-#         if not os.path.exists(file_path):
-#             print("⚠️ 找不到 {file_path}檔案。")
-#             return None
-
-#         # 讀取模型清單
-#         try:
-#             with open(file_path, "r", encoding="utf-8") as f:
-#                 models = json.load(f)
-#         except json.JSONDecodeError:
-#             print("⚠️ aimodel_list.json 格式錯誤。")
-#             return None
-
-#         if not models:
-#             print("⚠️ 模型清單為空。")
-#             return None
-
-#         # 擷取所有模型名稱
-#         model_names = [model["name"] for model in models]
-
-#         # 如果存在就回傳，否則回傳第一個
-#         if model_name in model_names:
-#             return model_name
-#         else:
-#             print(f"⚠️ 未找到指定模型 {model_name}，改為使用第一個模型：{model_names[0]}")
-#             return model_names[0]
-
-
-#     def listandSave_ollama_models_to_json(self ):
-#         url = "http://localhost:11434/api/tags"
-#         output_file = "Server/aimodel_list.json"
-#         try:
-#             response = requests.get(url)
-#             if response.status_code == 200:
-#                 models = response.json().get("models", [])
-#                 if not models:
-#                     print("⚠️ 尚未安裝任何模型。\n")
-#                 else:
-#                     print("✅ 本地可用模型：\n")
-#                     model_list = [{"name": model["name"]} for model in models]
-#                     for m in model_list:
-#                         print(m["name"])
-#                     with open(output_file, "w", encoding="utf-8") as f:
-#                         json.dump(model_list, f, indent=2, ensure_ascii=False)
-#                     print(f"\n📄 模型列表已寫入檔案：{output_file}")
-#             else:
-#                 print(f"❌ 查詢失敗：{response.status_code} - {response.text}")
-#         except requests.exceptions.RequestException as e:
-#             print("❌ 無法連接到 Ollama。請確認是否啟動。\n")
-#             print(str(e))
-
-
-# class NewsHandler:
-
-
-# class ClientManager:

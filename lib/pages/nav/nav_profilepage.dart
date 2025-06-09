@@ -3,6 +3,7 @@ import 'package:luama/pages/serversettingpage.dart';
 import 'package:luama/util/user.dart';
 
 import '../../util/Page_animation.dart';
+import '../../util/app_colors.dart';
 
 class Nav_ProfileWidget extends StatelessWidget {
   final TUser mySelf;
@@ -21,8 +22,10 @@ class Nav_ProfileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColorsProvider.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FBFA),
+      backgroundColor: appColors.ScaffoldBackground,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -41,27 +44,35 @@ class Nav_ProfileWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      mySelf.userName ?? 'Ethan Carter',
-                      style: const TextStyle(
-                        color: Color(0xFF0E1A13),
+                      mySelf.userName,
+                      style: TextStyle(
+                        color: appColors.PrimaryText,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Edit profile',
-                      style: TextStyle(color: Color(0xFF51946C), fontSize: 16),
+                    Text(
+                      'id :${mySelf.userId}',
+                      style: TextStyle(
+                        color: appColors.SearchBarHintColor,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
               ),
 
               // Name 欄位
-              _buildInputField('Name', mySelf.userName, nameController),
+              _buildInputField(
+                context,
+                'Name',
+                mySelf.userName,
+                nameController,
+              ),
 
               // ID欄位
-              _buildInputField('Id', mySelf.userId, idController),
+              _buildInputField(context, 'Id', mySelf.userId, idController),
             ],
           ),
 
@@ -73,8 +84,8 @@ class Nav_ProfileWidget extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38E07B),
-                  foregroundColor: const Color(0xFF0E1A13),
+                  backgroundColor: appColors.ButtonBGColor,
+                  foregroundColor: appColors.PrimaryText,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -84,8 +95,10 @@ class Nav_ProfileWidget extends StatelessWidget {
                     SnackMessage(text: "Name 跟 ID 任一不可為空白").show(context);
                     return;
                   }
-                  mySelf.userName = idController.text;
-                  mySelf.userId = nameController.text;
+
+                  mySelf.userName = nameController.text;
+                  mySelf.userId = idController.text;
+                  (context as Element).markNeedsBuild();
 
                   userManager.setupOnMessageReceived(mySelf);
                   mySelf.startClient();
@@ -107,10 +120,13 @@ class Nav_ProfileWidget extends StatelessWidget {
   }
 
   Widget _buildInputField(
+    BuildContext context,
     String label,
     String value,
     TextEditingController controller,
   ) {
+    final appColors = AppColorsProvider.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -118,8 +134,8 @@ class Nav_ProfileWidget extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF0E1A13),
+            style: TextStyle(
+              color: appColors.PrimaryText,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -129,8 +145,8 @@ class Nav_ProfileWidget extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFE8F2EC),
-              contentPadding: const EdgeInsets.symmetric(
+              fillColor: appColors.TextBox_Background,
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
               ),
@@ -139,9 +155,9 @@ class Nav_ProfileWidget extends StatelessWidget {
                 borderSide: BorderSide.none,
               ),
               hintText: 'Enter $label',
-              hintStyle: const TextStyle(color: Color(0xFF51946C)),
+              hintStyle: TextStyle(color: appColors.SettingTextHintColor),
             ),
-            style: const TextStyle(color: Color(0xFF0E1A13), fontSize: 16),
+            style: TextStyle(color: appColors.SettingTextColor, fontSize: 16),
           ),
         ],
       ),
