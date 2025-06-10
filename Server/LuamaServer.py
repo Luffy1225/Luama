@@ -20,6 +20,7 @@ from AIManager import (
     clear_dpseek_think_tag,
     SYSTEM_PROMPT,
 )
+from User import TUser
 
 from chatmsg import (
     ServiceType,
@@ -49,13 +50,14 @@ class LuamaServer:
         self.is_running = False
         self.clients = []
         self.clientslist = {}
+        self.user_info_list = []
         self.client_histories = {}
         self.server_thread = None
 
     # 啟動 Server
     def Start(self):
 
-        if self.is_running:
+        if self.is_running == True:
             print("⚠️ Server 已經啟動。")
             return
 
@@ -136,58 +138,19 @@ class LuamaServer:
                 try:
                     json_obj = json.loads(data.decode("utf-8"))
                     print(f"Receive User Raw Data：{json_obj}")
-
-                    # if not is_registered:
-
-                    #     register_info_str = json_obj.get("content")
-                    #     register_info = json.loads(
-                    #         register_info_str
-                    #     )  # 這裡把字串轉成 dict
-                    #     # 嘗試判斷是否為註冊訊息 (包含 Username 和 UserID)
-                    #     if "userName" in register_info and "userId" in register_info:
-                    #         user_info = {
-                    #             "userName": register_info["userName"],
-                    #             "userId": register_info["userId"],
-                    #         }
-                    #         print(f"✅ 使用者註冊成功: {user_info}")
-                    #         is_registered = True
-
-                    #         # 記錄連線對應的 userId
-                    #         userId = user_info["userId"]
-                    #         self.clientslist[user_info["userId"]] = (
-                    #             conn  # userId 作為 clientslist 的指標
-                    #         )
-                    #         self.client_histories[user_info["userId"]] = {}
-
-                    #         # 你可以回覆一個確認訊息
-                    #         response = {
-                    #             "status": "success",
-                    #             "message": "使用者註冊成功",
-                    #         }
-                    #         conn.sendall(json.dumps(response).encode("utf-8"))
-                    #         continue
-                    #     else:
-                    #         # 尚未註冊且資料不符，拒絕後續操作
-                    #         response = {
-                    #             "status": "error",
-                    #             "message": "請先註冊，訊息需包含 userName 和 userId",
-                    #         }
-                    #         conn.sendall(json.dumps(response).encode("utf-8"))
-                    #         continue
-
-                    # service_type = json_obj.get("service")
                     service_type = ServiceType(json_obj.get("service", "none"))
 
                     response_ChatMsg = None
-
                     if service_type == ServiceType.AI_REPLY:
                         response_ChatMsg = self.handle_ai_message(json_obj)
                     elif service_type == ServiceType.REQ_NEWS:
                         response_ChatMsg = self.handle_news_query(json_obj)
                     elif service_type == ServiceType.REQ_POST:
                         response_ChatMsg = self.handle_post_query(json_obj)
-                    elif service_type == ServiceType.LOAD_USER:
+                    elif service_type == ServiceType.BUILD_POST:
                         response_ChatMsg = self.handle_buildPost_query(json_obj)
+                    elif service_type == ServiceType.LOAD_USER:
+                        response_ChatMsg = self.handle_loadUser_query(json_obj)
                     elif service_type == ServiceType.SEND_USER_TO_USER:
                         response_ChatMsg = self.handle_UserToUser_Message(json_obj)
                     elif service_type == ServiceType.loginRegist:
@@ -289,6 +252,7 @@ class LuamaServer:
                     receiver=user_from,
                     receiverID=user_from_id,
                     content=jsondata,
+                    service=ServiceType.REQ_NEWS,
                     type=MessageType.TEXT,
                     timestamp=get_timestamp(),
                 )
@@ -350,34 +314,74 @@ class LuamaServer:
             register_info_str = json_message.get("content")
             register_info = json.loads(register_info_str)  # 這裡把字串轉成 dict
             # 嘗試判斷是否為註冊訊息 (包含 Username 和 UserID)
-            if "userName" in register_info and "userId" in register_info:
+            if "userName" in register_info and "userID" in register_info:
                 user_info = {
                     "userName": register_info["userName"],
-                    "userId": register_info["userId"],
+                    "userID": register_info["userID"],
+                    'profileImage': register_info["profileImage"],
+                    'email': register_info["email"],
+                    'isOnline': register_info["isOnline"],
+                    'isAIAgent': register_info["isAIAgent"], 
                 }
+
+                User_info = TUser(
+                    userID= register_info["userID"],
+                    userName= register_info["userName"],
+                    profileImage= register_info["profileImage"],
+                    email= register_info["email"],
+                    isOnline= register_info["isOnline"],
+                    isAIAgent= register_info["isAIAgent"],
+                )
+
+                for user in self.user_info_list: # TODO fix
+                    if (user.userID == User_info.userID):
+                        message = f"使用者ID: {User_info.userID} 重複註冊"
+                    
+
+                self.user_info_list.append(User_info)
+
                 print(f"✅ 使用者註冊成功: {user_info}")
                 is_registered = True
 
-                # 記錄連線對應的 userId
-                userId = user_info["userId"]
-                self.clientslist[user_info["userId"]] = (
-                    conn  # userId 作為 clientslist 的指標
+                # 記錄連線對應的 userID
+                userID = user_info["userID"]
+                self.clientslist[user_info["userID"]] = (
+                    conn  # userID 作為 clientslist 的指標
                 )
-                self.client_histories[user_info["userId"]] = {}
+                self.client_histories[user_info["userID"]] = {}
 
                 # 你可以回覆一個確認訊息
                 response = {
                     "status": "success",
-                    "message": f"使用者註冊成功: UserName: {user_info['userName']} ID: {user_info['userId']})",
+                    "message": f"使用者註冊成功: UserName: {user_info['userName']} ID: {user_info['userID']})",
                 }
                 response = json.dumps(response, ensure_ascii=False)
 
             else:
                 response = {
                     "status": "error",
-                    "message": "請先註冊，訊息需包含 userName 和 userId",
+                    "message": "請先註冊，訊息需包含 userName 和 userID",
                 }
                 response = json.dumps(response, ensure_ascii=False)
+
+                print(f"✅ 使用者註冊成功: {user_info}")
+                is_registered = True
+
+                # 記錄連線對應的 userID
+                userID = user_info["userID"]
+                self.clientslist[user_info["userID"]] = (
+                    conn  # userID 作為 clientslist 的指標
+                )
+                self.client_histories[user_info["userID"]] = {}
+
+                # 你可以回覆一個確認訊息
+                response = {
+                    "status": "success",
+                    "message": f"使用者註冊成功: UserName: {user_info['userName']} ID: {user_info['userID']})",
+                }
+                response = json.dumps(response, ensure_ascii=False)
+
+        
 
             # 尚未註冊且資料不符，拒絕後續操作
             chatmsg = ChatMsg(
@@ -386,7 +390,7 @@ class LuamaServer:
                 receiver=user_from,
                 receiverID=user_from_id,
                 content=response,
-                service=ServiceType.NONE,
+                service=ServiceType.loginRegist,
                 type=MessageType.TEXT,
                 timestamp=get_timestamp(),
             )
@@ -428,7 +432,7 @@ class LuamaServer:
 
     def handle_buildPost_query(self, json_message):
         service_type = ServiceType(json_message.get("service", "none"))
-        if service_type is not ServiceType.LOAD_USER:
+        if service_type is not ServiceType.BUILD_POST:
             return
 
         try:
@@ -487,6 +491,44 @@ class LuamaServer:
         )
         return chatmsg
 
+    def handle_loadUser_query(self,json_message):
+        service_type = ServiceType(json_message.get("service", "none"))
+        if service_type is not ServiceType.LOAD_USER:
+            return
+        
+        user_from = json_message.get("sender", "")
+        user_from_id = json_message.get("senderID", "")
+        user_sendto = json_message.get("receiver")
+        msg_type = MessageType(json_message.get("type", "text"))
+        contentstr = json_message.get("content", "")
+
+
+        # 查詢有 哪些用戶 並且全部用TUser轉成Json 丟到content
+        jsondata = self.GetUserListJson()
+
+        usersinfoMsg = ChatMsg(
+            sender=self.hostname,
+            senderID=intID_to_strID(0),
+            receiver=user_from,
+            receiverID=user_from_id,
+            content=jsondata,
+            type=MessageType.TEXT,
+            timestamp=get_timestamp(),
+        )
+
+        return usersinfoMsg
+
+
+    def GetUserListJson(self):
+        users_data = []
+        for user_info in self.user_info_list:
+            # Assuming user_info has a .to_dict() method
+            users_data.append(user_info.toJson())
+
+        # return json.dumps(users_data, ensure_ascii=False)  # json list # 他現在是string 
+        return users_data  # json list # 他現在是string 
+
+
     def get_client_count(self):
         return len(self.clients)
 
@@ -501,7 +543,7 @@ class LuamaServer:
         except Exception as e:
             print(f"⚠️ 儲存歷史紀錄失敗: {e}")
 
-    def _handle_aiReply_SYSTEM(self, userid, json_message):
+    def _handle_aiReply_SYSTEM(self, userID, json_message):
         user_from = json_message.get("sender", "")
         AI_Agent = json_message.get("receiver")
         msg_type = MessageType(json_message.get("type", "text"))
@@ -515,21 +557,21 @@ class LuamaServer:
             command_value = ""
 
         if command_name == "SetCustomPrompt":
-            if self.client_histories.get(userid) is None:
-                self.client_histories[userid] = {}
+            if self.client_histories.get(userID) is None:
+                self.client_histories[userID] = {}
             # 直接覆蓋為只有一個 system prompt
-            self.client_histories[userid][AI_Agent] = [
+            self.client_histories[userID][AI_Agent] = [
                 {"role": "system", "content": command_value}
             ]
             print(f"✅ 自訂 prompt 已套用於 {AI_Agent}：{command_value}")
 
         elif command_name == "Reset":
-            if self.client_histories.get(userid) is None:
-                self.client_histories[userid] = {}
+            if self.client_histories.get(userID) is None:
+                self.client_histories[userID] = {}
 
-            if AI_Agent not in self.client_histories[userid]:
-                self.client_histories[userid][AI_Agent] = []
-            self.client_histories[userid][AI_Agent] = [
+            if AI_Agent not in self.client_histories[userID]:
+                self.client_histories[userID][AI_Agent] = []
+            self.client_histories[userID][AI_Agent] = [
                 {"role": "system", "content": SYSTEM_PROMPT}
             ]
             print(

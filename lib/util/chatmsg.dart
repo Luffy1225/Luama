@@ -14,6 +14,7 @@ enum ServiceType {
   send_user_to_user,
   request_post,
   build_post,
+  load_user 
 }
 
 // USER_TO_USER = "send_user_to_user"

@@ -47,7 +47,7 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
           EditNewPost(context, (title, content) {
             Post Buildpost = Post(
               userName: widget.mySelf.userName,
-              userID: widget.mySelf.userId,
+              userID: widget.mySelf.userID,
               title: title,
               content: content,
               time: GetNowTimeStamp(),
@@ -58,7 +58,7 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
             });
             ChatMsg postmsg = ChatMsg(
               sender: widget.mySelf.userName,
-              senderID: widget.mySelf.userId,
+              senderID: widget.mySelf.userID,
               receiver: "LuamaServer",
               timestamp: GetNowTimeStamp(),
               content: jsonEncode(Buildpost.toJson()),
@@ -141,7 +141,7 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
     // 建立一筆要求新聞的 ChatMsg
     ChatMsg Req_NewsMsg = ChatMsg(
       sender: widget.mySelf.userName,
-      senderID: widget.mySelf.userId,
+      senderID: widget.mySelf.userID,
       receiver: "NewsServer",
       service: ServiceType.request_post,
       content: "4",

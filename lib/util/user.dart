@@ -11,7 +11,7 @@ import 'chatmsg.dart';
 
 class TUser {
   //User Information
-  String userId; // 用戶ID，可以用來識別不同的用戶
+  String userID; // 用戶ID，可以用來識別不同的用戶
   String userName; // 用戶名稱
   String profileImage; // 使用者頭像URL
   String email; // 使用者電子郵件
@@ -29,7 +29,7 @@ class TUser {
 
   // 建構子
   TUser({
-    required this.userId,
+    required this.userID,
     required this.userName,
     required this.profileImage,
     required this.email,
@@ -46,7 +46,7 @@ class TUser {
   // 用來顯示使用者訊息的函式
   @override
   String toString() {
-    return 'User{id: $userId, name: $userName, email: $email, isOnline: $isOnline}';
+    return 'User{id: $userID, name: $userName, email: $email, isOnline: $isOnline}';
   }
 
   // 更新使用者的在線狀態
@@ -56,7 +56,7 @@ class TUser {
 
   // 用來檢查是否為有效使用者
   bool isValidUser() {
-    return userId.isNotEmpty && userName.isNotEmpty && email.isNotEmpty;
+    return userID.isNotEmpty && userName.isNotEmpty && email.isNotEmpty;
   }
 
   // 發送訊息給該用戶
@@ -134,7 +134,7 @@ class TUser {
       identical(this, other) ||
       other is TUser &&
           runtimeType == other.runtimeType &&
-          userId == other.userId &&
+          userID == other.userID &&
           userName == other.userName &&
           email == other.email;
 
@@ -164,26 +164,27 @@ class TUser {
   /// 將 TUser 轉為 Map
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
+      'userID': userID,
       'userName': userName,
       'profileImage': profileImage,
       'email': email,
       'isOnline': isOnline,
+      'isAIAgent':isAIAgent,
     };
   }
 
   /// 儲存 JSON 資料到檔案
   void save2Json(String path) async {
-    final file = File('user_$userId.json');
+    final file = File('user_$userID.json');
     String jsonData = jsonEncode(toJson());
     await file.writeAsString(jsonData);
-    print('User data saved to user_$userId.json');
+    print('User data saved to user_$userID.json');
   }
 
   /// 將 JSON Map 還原為 TUser 物件
   TUser readfromJson(Map<String, dynamic> json) {
     return TUser(
-      userId: json['userId'],
+      userID: json['userID'],
       userName: json['userName'],
       profileImage: json['profileImage'],
       email: json['email'],
@@ -192,7 +193,7 @@ class TUser {
 
   // static TUser loadSelfData() {
   //   return TUser(
-  //     userId: "1225",
+  //     userID: "1225",
   //     userName: "Luffy",
   //     profileImage: "",
   //     email: "Luffy1225",
@@ -203,7 +204,7 @@ class TUser {
 
     return ChatMsg(
       sender: userName,
-      senderID: userId,
+      senderID: userID,
       receiver: "LuamaServer",
       service: ServiceType.loginRegist,
       type: MessageType.text,
@@ -218,7 +219,7 @@ enum SortRule { by_ID, by_Name, by_Time }
 class UserManager extends ChangeNotifier {
   List<TUser> users = [];
 
-  // 用 userId 作為 key，對應該使用者的聊天紀錄
+  // 用 userID 作為 key，對應該使用者的聊天紀錄
   Map<String, List<ChatMsg>> userChatHistories = {};
 
   UserManager() {
@@ -228,33 +229,33 @@ class UserManager extends ChangeNotifier {
   void loadSampleUser() {
     users = [
       TUser(
-        userId: "0001",
+        userID: "0001",
         userName: "llama3.2:latest",
         profileImage: "",
         email: "",
         isAIAgent: true,
       ),
       TUser(
-        userId: "0002",
+        userID: "0002",
         userName: "deepseek-r1:7b",
         profileImage: "",
         email: "",
         isAIAgent: true,
       ),
-      TUser(userId: "0003", userName: "Yuniko", profileImage: "", email: ""),
-      TUser(userId: "0004", userName: "Nami", profileImage: "", email: ""),
-      TUser(userId: "0005", userName: "Usopp", profileImage: "", email: ""),
-      TUser(userId: "0006", userName: "Sanji", profileImage: "", email: ""),
-      TUser(userId: "0007", userName: "Chopper", profileImage: "", email: ""),
-      TUser(userId: "0008", userName: "Robin", profileImage: "", email: ""),
-      TUser(userId: "0009", userName: "Franky", profileImage: "", email: ""),
-      TUser(userId: "0000", userName: "Brook", profileImage: "", email: ""),
-      TUser(userId: "0011", userName: "Jinbe", profileImage: "", email: ""),
-      TUser(userId: "0012", userName: "Vivi", profileImage: "", email: ""),
-      TUser(userId: "0013", userName: "Carrot", profileImage: "", email: ""),
-      TUser(userId: "0014", userName: "Yamato", profileImage: "", email: ""),
-      TUser(userId: "0015", userName: "Bonney", profileImage: "", email: ""),
-      TUser(userId: "0016", userName: "Hancock", profileImage: "", email: ""),
+      TUser(userID: "0003", userName: "Yuniko", profileImage: "", email: ""),
+      TUser(userID: "0004", userName: "Nami", profileImage: "", email: ""),
+      TUser(userID: "0005", userName: "Usopp", profileImage: "", email: ""),
+      TUser(userID: "0006", userName: "Sanji", profileImage: "", email: ""),
+      TUser(userID: "0007", userName: "Chopper", profileImage: "", email: ""),
+      TUser(userID: "0008", userName: "Robin", profileImage: "", email: ""),
+      TUser(userID: "0009", userName: "Franky", profileImage: "", email: ""),
+      TUser(userID: "0000", userName: "Brook", profileImage: "", email: ""),
+      TUser(userID: "0011", userName: "Jinbe", profileImage: "", email: ""),
+      TUser(userID: "0012", userName: "Vivi", profileImage: "", email: ""),
+      TUser(userID: "0013", userName: "Carrot", profileImage: "", email: ""),
+      TUser(userID: "0014", userName: "Yamato", profileImage: "", email: ""),
+      TUser(userID: "0015", userName: "Bonney", profileImage: "", email: ""),
+      TUser(userID: "0016", userName: "Hancock", profileImage: "", email: ""),
     ];
   }
 
@@ -265,7 +266,7 @@ class UserManager extends ChangeNotifier {
   void sortBy(SortRule rule) {
     switch (rule) {
       case SortRule.by_ID:
-        users.sort((a, b) => a.userId.compareTo(b.userId));
+        users.sort((a, b) => a.userID.compareTo(b.userID));
         break;
       case SortRule.by_Name:
         users.sort((a, b) => a.userName.compareTo(b.userName));
@@ -282,11 +283,11 @@ class UserManager extends ChangeNotifier {
 
   void loadUserChatHistories() {}
 
-  void addChatMessage(String userId, ChatMsg msg) {
-    if (!userChatHistories.containsKey(userId)) {
-      userChatHistories[userId] = [];
+  void addChatMessage(String userID, ChatMsg msg) {
+    if (!userChatHistories.containsKey(userID)) {
+      userChatHistories[userID] = [];
     }
-    userChatHistories[userId]!.add(msg);
+    userChatHistories[userID]!.add(msg);
     notifyListeners();
   }
 
@@ -298,7 +299,7 @@ class UserManager extends ChangeNotifier {
         final chatmsg = ChatMsg.fromJson(jsonData);
         addChatMessage(chatmsg.senderID, chatmsg);
         // addChatMessage(chatmsg.receiver, chatmsg);
-        // addChatMessage(user.userId, chatmsg); //感覺是放
+        // addChatMessage(user.userID, chatmsg); //感覺是放
       };
     } catch (e) {
       print("JSON parsing error: $e");
@@ -317,20 +318,20 @@ class UserManager extends ChangeNotifier {
   //     }
   //   };
 
-  List<ChatMsg> getChatHistory(String userId) {
-    if (!userChatHistories.containsKey(userId)) {
-      userChatHistories[userId] = <ChatMsg>[]; // 建立一個新的空紀錄
-      print("建立新的聊天紀錄給 $userId");
+  List<ChatMsg> getChatHistory(String userID) {
+    if (!userChatHistories.containsKey(userID)) {
+      userChatHistories[userID] = <ChatMsg>[]; // 建立一個新的空紀錄
+      print("建立新的聊天紀錄給 $userID");
     }
-    return userChatHistories[userId]!;
+    return userChatHistories[userID]!;
   }
 
-  void clearChatHistory(String userId) {
-    userChatHistories.remove(userId);
+  void clearChatHistory(String userID) {
+    userChatHistories.remove(userID);
   }
 
-  void mergeChatHistory(String userId, List<ChatMsg> newHistory) {
-    userChatHistories[userId] = [...?userChatHistories[userId], ...newHistory];
+  void mergeChatHistory(String userID, List<ChatMsg> newHistory) {
+    userChatHistories[userID] = [...?userChatHistories[userID], ...newHistory];
   }
 
   int get length => users.length;

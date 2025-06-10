@@ -56,7 +56,7 @@ class _HomepageState extends State<Homepage> {
   late final TUser MySelf; // 實際使用的使用者
 
   final TUser _defaultMySelf = TUser(
-    userId: "1225",
+    userID: "1225",
     userName: "Luffy",
     profileImage: "",
     email: "Luffy1225",

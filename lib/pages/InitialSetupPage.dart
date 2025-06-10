@@ -146,7 +146,7 @@ class InitialSetupPage extends StatelessWidget {
     }
 
     TUser myself = TUser(
-      userId: idController.text,
+      userID: idController.text,
       userName: nameController.text,
       email: emailController.text,
       profileImage: "",

@@ -48,7 +48,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     SelfUser = widget.selfUser;
     TargetUser = widget.targetUser;
-    _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userId);
+    _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userID);
     TargetUser = widget.targetUser;
     _controller.addListener(() {
       setState(() {}); // 輸入框框有值 觸發 UI 更新
@@ -90,7 +90,7 @@ class _ChatPageState extends State<ChatPage> {
     if (!mounted) return; // 如果已經 dispose，直接跳過
 
     setState(() {
-      _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userId);
+      _JSON_ChatHistory = widget.userManager.getChatHistory(TargetUser.userID);
       print("$_JSON_ChatHistory");
     });
 
@@ -117,9 +117,9 @@ class _ChatPageState extends State<ChatPage> {
 
     ChatMsg message = ChatMsg(
       sender: SelfUser.userName,
-      senderID: SelfUser.userId,
+      senderID: SelfUser.userID,
       receiver: TargetUser.userName,
-      receiverID: TargetUser.userId,
+      receiverID: TargetUser.userID,
       service: _service,
       type: whatMsgType(text, _selectedImage),
       content: text,
@@ -418,9 +418,9 @@ class _ChatPageState extends State<ChatPage> {
     // TODO
     ChatMsg Resetmessage = ChatMsg(
       sender: SelfUser.userName,
-      senderID: SelfUser.userId,
+      senderID: SelfUser.userID,
       receiver: TargetUser.userName,
-      receiverID: TargetUser.userId,
+      receiverID: TargetUser.userID,
       service: ServiceType.ai_reply,
       type: MessageType.system,
       content: "Reset",

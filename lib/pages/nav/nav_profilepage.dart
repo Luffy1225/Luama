@@ -17,7 +17,7 @@ class Nav_ProfileWidget extends StatelessWidget {
     required this.userManager,
   }) {
     nameController.text = mySelf.userName;
-    idController.text = mySelf.userId;
+    idController.text = mySelf.userID;
   }
 
   @override
@@ -53,7 +53,7 @@ class Nav_ProfileWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'id :${mySelf.userId}',
+                      'id :${mySelf.userID}',
                       style: TextStyle(
                         color: appColors.SearchBarHintColor,
                         fontSize: 16,
@@ -72,7 +72,7 @@ class Nav_ProfileWidget extends StatelessWidget {
               ),
 
               // ID欄位
-              _buildInputField(context, 'Id', mySelf.userId, idController),
+              _buildInputField(context, 'Id', mySelf.userID, idController),
             ],
           ),
 
@@ -97,7 +97,7 @@ class Nav_ProfileWidget extends StatelessWidget {
                   }
 
                   mySelf.userName = nameController.text;
-                  mySelf.userId = idController.text;
+                  mySelf.userID = idController.text;
                   (context as Element).markNeedsBuild();
 
                   userManager.setupOnMessageReceived(mySelf);
