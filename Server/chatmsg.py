@@ -19,7 +19,8 @@ class ServiceType(Enum):
     REQ_NEWS = "request_news"
     UPDATE_USER = "update_user"
     REQ_POST = "request_post"
-    Build_POST = "build_post"
+    BUILD_POST = "build_post"
+    LOAD_USER = "load_user"
     NONE = "none"
 
 

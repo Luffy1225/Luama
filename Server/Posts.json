@@ -1,0 +1,18 @@
+{
+  "posts": [
+    {
+      "userName": "User0213",
+      "userID": "0213",
+      "title": "Im new!!",
+      "time": "2025-06-10 – 02:19",
+      "content": "Hello Everyone"
+    },
+    {
+      "userName": "User2113",
+      "userID": "2113",
+      "title": "New Feature!!",
+      "time": "2025-06-10 – 02:17",
+      "content": "Yaaaaa"
+    }
+  ]
+}

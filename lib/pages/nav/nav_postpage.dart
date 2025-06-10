@@ -6,6 +6,10 @@ import '../../util/app_colors.dart'; // 引用自訂顏色
 import '../../util/chatmsg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:uuid/uuid.dart';
+
+var UUID = Uuid();
+
 class Nav_PostWidget extends StatefulWidget {
   final TUser mySelf;
   // final Function(String) OnMessageReceived;
@@ -40,15 +44,95 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
       backgroundColor: appColors.ScaffoldBackground,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 點擊 + 處理邏輯
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("點擊了新增貼文按鈕")));
+          EditNewPost(context, (title, content) {
+            Post Buildpost = Post(
+              userName: widget.mySelf.userName,
+              userID: widget.mySelf.userId,
+              title: title,
+              content: content,
+              time: GetNowTimeStamp(),
+            );
+
+            setState(() {
+              postManager.addNews(Buildpost);
+            });
+            ChatMsg postmsg = ChatMsg(
+              sender: widget.mySelf.userName,
+              senderID: widget.mySelf.userId,
+              receiver: "LuamaServer",
+              timestamp: GetNowTimeStamp(),
+              content: jsonEncode(Buildpost.toJson()),
+              service: ServiceType.build_post,
+              type: MessageType.text,
+            );
+
+            widget.mySelf.sendMessage(postmsg);
+          });
         },
         shape: const CircleBorder(),
         backgroundColor: appColors.ButtonBGColor,
         child: Icon(Icons.add, color: appColors.TopBar_IconColor),
       ),
+    );
+  }
+
+  void EditNewPost(
+    BuildContext context,
+    Function(String title, String content) onPostSubmit,
+  ) {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController contentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "新增貼文",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(labelText: "標題"),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: InputDecoration(labelText: "內容"),
+                maxLines: 4,
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    String title = titleController.text.trim();
+                    String content = contentController.text.trim();
+                    if (title.isNotEmpty || content.isNotEmpty) {
+                      onPostSubmit(title, content);
+                      Navigator.pop(context); // 關閉 bottom sheet
+                    }
+                  },
+                  child: Text("發佈"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -82,11 +166,11 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
           for (var postInfo in contentData) {
             Post post = Post(
               userName: postInfo["userName"],
-              userid: postInfo["userid"],
+              userID: postInfo["userID"],
               title: postInfo["title"],
               time: postInfo["time"],
               content: postInfo["content"],
-              comments: postInfo["comments"],
+              // comments: postInfo["comments"],
             );
             postManager.addNews(post);
           }
@@ -103,7 +187,7 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
         for (var postInfo in postList) {
           Post post = Post(
             userName: postInfo["userName"],
-            userid: postInfo["userid"],
+            userID: postInfo["userid"],
             title: postInfo["title"],
             time: postInfo["time"],
             content: postInfo["content"],
@@ -141,7 +225,7 @@ class _PostWidgetState extends State<PostWidget> {
     super.initState();
     likeAmount = widget.post.likeAmount;
     userName = widget.post.userName;
-    userid = widget.post.userid;
+    userid = widget.post.userID;
     title = widget.post.title;
     time = widget.post.time;
     content = widget.post.content;
@@ -277,8 +361,9 @@ class _PostWidgetState extends State<PostWidget> {
 }
 
 class Post {
+  String uuid = '';
   final String userName;
-  final String userid;
+  final String userID;
   final String title;
   final String time;
   final String content;
@@ -287,8 +372,9 @@ class Post {
   int likeAmount = 0;
 
   Post({
+    String? uuid,
     required this.userName,
-    required this.userid,
+    required this.userID,
     required this.title,
     required this.time,
     required this.content,
@@ -299,114 +385,77 @@ class Post {
   void addComment(Post comment) {
     comments.add(comment);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "uuid": uuid,
+      "userName": userName,
+      "userID": userID,
+      "title": title,
+      "content": content,
+      "likes": likeAmount,
+      "time": time,
+    };
+  }
 }
 
 class PostManager {
   final List<Post> postList = [
-    Post(
-      userName: "alice",
-      userid: "0324",
-      title: "Flutter 真香",
-      time: "2025-06-09 10:00",
-      content: "最近開始學 Flutter，感覺超有趣！",
-      comments: [
-        Post(
-          userName: "bob",
-          userid: "3660",
-          title: "",
-          time: "2025-06-09 10:05",
-          content: "真的！我用它做了一個 app！",
-        ),
-        Post(
-          userName: "charlie",
-          userid: "5812",
-          title: "",
-          time: "2025-06-09 10:10",
-          content: "有推薦的教學影片嗎？",
-        ),
-      ],
-    ),
+    // Post(
+    //   userName: "alice",
+    //   userID: "0324",
+    //   title: "Flutter 真香",
+    //   time: "2025-06-09 10:00",
+    //   content: "最近開始學 Flutter，感覺超有趣！",
+    //   comments: [
+    //     Post(
+    //       userName: "bob",
+    //       userID: "3660",
+    //       title: "",
+    //       time: "2025-06-09 10:05",
+    //       content: "真的！我用它做了一個 app！",
+    //     ),
+    //     Post(
+    //       userName: "charlie",
+    //       userID: "5812",
+    //       title: "",
+    //       time: "2025-06-09 10:10",
+    //       content: "有推薦的教學影片嗎？",
+    //     ),
+    //   ],
+    // ),
 
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
+    // Post(
+    //   userName: "david",
+    //   userID: "7781",
+    //   title: "Dart 的 Map 用法分享",
+    //   time: "2025-06-08 21:30",
+    //   content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    // ),
 
-    Post(
-      userName: "emma",
-      userid: "0321",
-      title: "這週學習計畫",
-      time: "2025-06-07 08:20",
-      content: "打算這週完成：1. Flutter UI 2. ListView 操作 3. 接 Firebase！",
-      comments: [
-        Post(
-          userName: "frank",
-          userid: "0317",
-          title: "",
-          time: "2025-06-07 09:00",
-          content: "加油！我也在學類似的內容～",
-        ),
-      ],
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
-    Post(
-      userName: "david",
-      userid: "7781",
-      title: "Dart 的 Map 用法分享",
-      time: "2025-06-08 21:30",
-      content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
-    ),
+    // Post(
+    //   userName: "emma",
+    //   userID: "0321",
+    //   title: "這週學習計畫",
+    //   time: "2025-06-07 08:20",
+    //   content: "打算這週完成：1. Flutter UI 2. ListView 操作 3. 接 Firebase！",
+    //   comments: [
+    //     Post(
+    //       userName: "frank",
+    //       userID: "0317",
+    //       title: "",
+    //       time: "2025-06-07 09:00",
+    //       content: "加油！我也在學類似的內容～",
+    //     ),
+    //   ],
+    // ),
+    // Post(
+    //   userName: "david",
+    //   userID: "7781",
+    //   title: "Dart 的 Map 用法分享",
+    //   time: "2025-06-08 21:30",
+    //   content: "今天學會了 Dart 中 Map 的一些技巧，分享給大家！",
+    // ),
   ];
 
   List<Post> getAllNews() {

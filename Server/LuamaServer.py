@@ -186,7 +186,7 @@ class LuamaServer:
                         response_ChatMsg = self.handle_news_query(json_obj)
                     elif service_type == ServiceType.REQ_POST:
                         response_ChatMsg = self.handle_post_query(json_obj)
-                    elif service_type == ServiceType.Build_POST:
+                    elif service_type == ServiceType.LOAD_USER:
                         response_ChatMsg = self.handle_buildPost_query(json_obj)
                     elif service_type == ServiceType.SEND_USER_TO_USER:
                         response_ChatMsg = self.handle_UserToUser_Message(json_obj)
@@ -405,9 +405,10 @@ class LuamaServer:
         user_from_id = json_message.get("senderID", "")
         user_sendto = json_message.get("receiver")
         msg_type = MessageType(json_message.get("type", "text"))
+        servive_type = ServiceType(json_message.get("service", "text"))
         amountstr = json_message.get("content", "")
 
-        if msg_type == ServiceType.REQ_POST:
+        if servive_type == ServiceType.REQ_POST:
             try:
                 amount = int(amountstr)
                 jsondata = self.GetUpdatePosts(amount)
@@ -426,36 +427,65 @@ class LuamaServer:
                 print("amount 收到為: {amount}, 無法轉換為整數")
 
     def handle_buildPost_query(self, json_message):
-        if msg_type != ServiceType.Build_POST:
+        service_type = ServiceType(json_message.get("service", "none"))
+        if service_type is not ServiceType.LOAD_USER:
             return
 
-        user_from = json_message.get("sender", "")
-        user_from_id = json_message.get("senderID", "")
-        user_sendto = json_message.get("receiver")
-        msg_type = MessageType(json_message.get("type", "text"))
-        buildPost_info_str = json_message.get("content")
-        buildPost_info = json.loads(buildPost_info_str)  # 這裡把字串轉成 dict
+        try:
+            user_from = json_message.get("sender", "")
+            user_from_id = json_message.get("senderID", "")
+            user_sendto = json_message.get("receiver")
+            msg_type = MessageType(json_message.get("type", "text"))
+
+            buildPost_info_str = json_message.get("content")
+            buildPost_info = json.loads(buildPost_info_str)  # 這裡把字串轉成 dict
+        except json.JSONDecodeError:
+            print("⚠️ 無法解析 Build_POST 的內容，請確認格式正確")
 
         post_info = {
             "userName": buildPost_info["userName"],
-            "userId": buildPost_info["userId"],
+            "userID": buildPost_info["userID"],
             "title": buildPost_info["title"],
             "time": buildPost_info["time"],
             "content": buildPost_info["content"],
         }
 
-        # TODO: 這裡可以加入更多的 post 資訊，例如圖片、連結等
-        post_info_json = post_info  # 亂寫 這邊還沒好
+        # 顯示貼文內容
+        print("📥 接收到貼文：")
+        print(json.dumps(post_info, ensure_ascii=False, indent=2))
 
-        # 顯示結果（格式化輸出）
-        if post_info_json:
-            print(json.dumps(post_info_json, ensure_ascii=False, indent=2))
-            with open("Server/Posts.json", "a", encoding="utf-8") as f:
-                json.dump(post_info_json, f, ensure_ascii=False, indent=2)
-            print("已儲存至 Server/Posts.json")
-            return post_info_json
-        else:
-            print("找不到新聞")
+        # 檔案路徑
+        file_path = "Server/Posts.json"
+        posts_json = {"posts": []}
+
+        # 讀取原有資料
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as f:
+                try:
+                    loaded_json = json.load(f)
+                    if isinstance(loaded_json, dict) and "posts" in loaded_json:
+                        posts_json = loaded_json
+                except json.JSONDecodeError:
+                    posts_json = {"posts": []}
+        # 加入新貼文到最前面
+        posts_json["posts"].insert(0, post_info)
+
+        # 寫回檔案
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(posts_json, f, ensure_ascii=False, indent=2)
+
+        print("✅ 貼文已儲存至 Server/Posts.json")
+
+        chatmsg = ChatMsg(
+            sender=self.hostname,
+            senderID=intID_to_strID(0),
+            receiver=user_from,
+            receiverID=user_from_id,
+            content=posts_json,
+            type=MessageType.TEXT,
+            timestamp=get_timestamp(),
+        )
+        return chatmsg
 
     def get_client_count(self):
         return len(self.clients)
