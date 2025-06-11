@@ -34,6 +34,15 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
   }
 
   @override
+  void dispose() {
+    // if (_isDispatcherInitialized) {
+    //   dispatcher.unregisterHandler(ServiceType.request_post);
+    //   _isDispatcherInitialized = false;
+    // }
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _registerDispatcherHandlers();

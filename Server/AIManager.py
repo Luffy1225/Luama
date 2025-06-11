@@ -288,9 +288,17 @@ def select_AImodel(model_name):
     # 擷取所有模型名稱
     model_names = [model["name"] for model in models]
 
-    # 如果存在就回傳名稱和索引，否則回傳第一個和索引0
-    if model_name in model_names:
-        return model_name, intID_to_strID(model_names.index(model_name))
+    # # 如果存在就回傳名稱和索引，否則回傳第一個和索引0
+    # if model_name in model_names:
+    #     return model_name, intID_to_strID(model_names.index(model_name))
+
+    if model_name == "llama3.2:latest":
+        print("⚠️ 使用 DeepSeek R1 模型")
+        return "deepseek-r1:7b", intID_to_strID(1)
+    elif model_name == "deepseek-r1:7b":
+        print("⚠️ 使用 DeepSeek R1 模型")
+        return "deepseek-r1:7b", intID_to_strID(2)
+
     else:
         print(f"⚠️ 未找到指定模型 {model_name}，改為使用第一個模型：{model_names[0]}")
         return model_names[0], intID_to_strID(1)

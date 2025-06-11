@@ -34,6 +34,15 @@ class _Nav_HomeWidgetState extends State<Nav_HomeWidget> {
   }
 
   @override
+  void dispose() {
+    // if (_isDispatcherInitialized) {
+    //   dispatcher.unregisterHandler(ServiceType.request_news);
+    //   _isDispatcherInitialized = false;
+    // }
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _registerDispatcherHandlers();

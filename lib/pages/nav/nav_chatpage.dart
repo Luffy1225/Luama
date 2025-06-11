@@ -153,6 +153,15 @@ class _Nav_ChatWidgetState extends State<Nav_ChatWidget> {
   }
 
   @override
+  void dispose() {
+    if (_isDispatcherInitialized) {
+      dispatcher.unregisterHandler(ServiceType.load_user);
+      _isDispatcherInitialized = false;
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: widget.userManager.length,

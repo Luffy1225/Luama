@@ -82,6 +82,7 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
       _JSON_ChatHistory.add(chatmsg);
 
       // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
+      if (!mounted) return;
       setState(() {
         _ShowText = _JSON_ChatHistory.last.content;
       });
@@ -268,10 +269,10 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
     sttTtsManager.stopListening();
     sttTtsManager.Stopspeak();
     // 移除 dispatcher 的 handler
-    if (_isDispatcherInitialized) {
-      dispatcher.unregisterHandler(ServiceType.ai_reply);
-      _isDispatcherInitialized = false;
-    }
+    // if (_isDispatcherInitialized) {
+    //   dispatcher.unregisterHandler(ServiceType.ai_reply);
+    //   _isDispatcherInitialized = false;
+    // }
     super.dispose();
   }
 }

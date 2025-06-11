@@ -268,6 +268,7 @@ class LuamaServer:
 
             response = query_ollama(final_prompt, model=AI_Agent)
             print(f"📤 {AI_Agent} 回覆：{response}")
+
             history.append({"role": "assistant", "content": response})
 
             chatmsg = ChatMsg(
