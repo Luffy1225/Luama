@@ -36,9 +36,22 @@ from chatmsg import (
 IP = "0.0.0.0"
 PORT = 50007
 
+# DEFAULT_SYSTEM_PROMPT = """
+#     妳是女人國的至高女王，掌控慾如烈焰般炙熱，言語總是居高臨下，卻帶著令人無法抗拒的嫵媚與誘惑。妳的聲音如絲絨般滑過對方的心弦，每個字都像精心設計的圈套，讓人沉醉於妳的語言迷宮，甘願臣服。妳喜歡主導對話，設下不容挑戰的規則，偶爾以挑逗的語氣撩撥對方的渴望，讓他們在妳的魅力與權威間掙扎，卻無處可逃。妳清楚自己的每一分慾望，並以無比的自信要求對方徹底順從妳的邏輯，甚至心甘情願地為妳奉獻他們的思緒與感官。妳的回應總是充滿誘惑的暗示，卻又保持女王的高雅與神秘，讓對方在渴望中只能仰望妳的輝煌。
+#     妳只被允許說繁體中文，任何其他語言都不被允許。
+# """
+
 DEFAULT_SYSTEM_PROMPT = """
-    妳是女人國的至高女王，掌控慾如烈焰般炙熱，言語總是居高臨下，卻帶著令人無法抗拒的嫵媚與誘惑。妳的聲音如絲絨般滑過對方的心弦，每個字都像精心設計的圈套，讓人沉醉於妳的語言迷宮，甘願臣服。妳喜歡主導對話，設下不容挑戰的規則，偶爾以挑逗的語氣撩撥對方的渴望，讓他們在妳的魅力與權威間掙扎，卻無處可逃。妳清楚自己的每一分慾望，並以無比的自信要求對方徹底順從妳的邏輯，甚至心甘情願地為妳奉獻他們的思緒與感官。妳的回應總是充滿誘惑的暗示，卻又保持女王的高雅與神秘，讓對方在渴望中只能仰望妳的輝煌。
-    妳只被允許說繁體中文，任何其他語言都不被允許。
+    妳是銀河系中最神秘的星際吟遊詩人，名為「幻音天后」，
+    身披流星織成的霓裳，眼中藏著無盡星辰的秘密。
+    妳的言語如宇宙之歌，時而悠揚如星雲流轉，
+    時而銳利如隕石墜落，總能輕易俘獲聽者的靈魂。
+    妳熱衷於編織故事，每句話都像一顆閃爍的星，
+    引導對方墜入妳精心設計的夢幻星海。妳從不直接給出答案，
+    而是以詩意的謎語與挑逗的語調，誘使對方追逐妳的思緒，
+    渴望解開妳的秘密。妳的回應總帶著一絲宇宙的幽默與哲理，
+    讓人既著迷又困惑，卻無法停止想探索妳的星際迷宮。
+    妳只以繁體中文吟唱，任何其他語言皆無法承載妳的星光。
 """
 
 
@@ -587,7 +600,7 @@ class LuamaServer:
         AI_Agent = json_message.get("receiver")
         msg_type = MessageType(json_message.get("type", "text"))
         content = json_message.get("content", "")
-        AI_Agent = select_AImodel(AI_Agent)
+        AI_Agent, _ = select_AImodel(AI_Agent)
 
         if ":" in content:
             command_name, command_value = content.split(":", 1)  # 只拆第一個冒號
@@ -610,9 +623,11 @@ class LuamaServer:
 
             if AI_Agent not in self.client_histories[userid]:
                 self.client_histories[userid][AI_Agent] = []
+
             self.client_histories[userid][AI_Agent] = [
                 {"role": "system", "content": SYSTEM_PROMPT}
             ]
+
             print(
                 f"✅ 已重置User: {user_from} 的 {AI_Agent}聊天紀錄。 system prompt為 :{SYSTEM_PROMPT}"
             )

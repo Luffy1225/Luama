@@ -27,7 +27,9 @@ class _SettingPageState extends State<SettingPage> {
     final customPrompt = _customPromptController.text;
     ChatMsg setCustomPromptmsg = ChatMsg(
       sender: widget.SelfUser.userName,
+      senderID: widget.SelfUser.userID,
       receiver: widget.TargetUser.userName,
+      receiverID: widget.TargetUser.userID,
       service: ServiceType.ai_reply,
       type: MessageType.system,
       content: "SetCustomPrompt: $customPrompt",
