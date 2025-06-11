@@ -100,7 +100,7 @@ class Nav_ProfileWidget extends StatelessWidget {
                   mySelf.userID = idController.text;
                   (context as Element).markNeedsBuild();
 
-                  userManager.setupOnMessageReceived(mySelf);
+                  // userManager.setupOnMessageReceived(mySelf);
                   mySelf.startClient();
                 },
                 child: const Text(

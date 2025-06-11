@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'util/app_colors.dart'; // 引用自訂顏色
 import 'util/user.dart';
 import 'util/Page_animation.dart';
-import 'util/global_Setting.dart';
+// import 'util/global_Setting.dart';
+import 'util/message_dispatcher.dart';
+import 'util/chatmsg.dart';
+import 'util/message_dispatcher.dart';
 
 // import 'pages/settingpage.dart';
 import 'pages/serversettingpage.dart';
@@ -24,27 +27,40 @@ class Luama extends StatelessWidget {
     final Brightness brightness = MediaQuery.of(context).platformBrightness;
     final AppColors appColors =
         (brightness == Brightness.dark) ? DarkTheme : LightTheme;
+    final MessageDispatcher dispatcher = MessageDispatcher();
 
-    return AppColorsProvider(
-      appColors: appColors,
-      // isDarkMode: brightness == Brightness.dark,
+    // return AppColorsProvider(
+    //   appColors: appColors,
+    //   // isDarkMode: brightness == Brightness.dark,
 
-      // MySelf: mySelf,
-      child: MaterialApp(
-        title: 'Luama',
-        debugShowCheckedModeBanner: false,
-        home: InitialSetupPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
-        // home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
-        // home: StitchDesignPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+    //   // MySelf: mySelf,
+    //   child: MaterialApp(
+    //     title: 'Luama',
+    //     debugShowCheckedModeBanner: false,
+    //     home: InitialSetupPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+    //     // home: Homepage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+    //     // home: StitchDesignPage(), // 其他頁面都可以用 AppColorsProvider.of(context)
+    //   ),
+    // );
+
+    return MessageDispatcherProvider(
+      dispatcher: dispatcher, // 一定要傳入這個 dispatcher
+      child: AppColorsProvider(
+        appColors: appColors,
+        child: MaterialApp(
+          title: 'Luama',
+          debugShowCheckedModeBanner: false,
+          home: InitialSetupPage(),
+        ),
       ),
     );
   }
 }
 
 class Homepage extends StatefulWidget {
-  final TUser? MySelf; // 可為 null
+  final TUser MySelf;
 
-  Homepage({this.MySelf, super.key});
+  Homepage({required this.MySelf, super.key});
 
   @override
   _HomepageState createState() => _HomepageState();
@@ -54,23 +70,50 @@ class _HomepageState extends State<Homepage> {
   int _NavSelectedIndex = 1;
 
   late final TUser MySelf; // 實際使用的使用者
-
-  final TUser _defaultMySelf = TUser(
-    userID: "1225",
-    userName: "Luffy",
-    profileImage: "",
-    email: "Luffy1225",
-  );
-
   final _userManager = UserManager();
+
+  bool _isDispatcherInitialized = false;
+  var dispatcher = MessageDispatcher();
 
   @override
   void initState() {
-    // 如果外部傳入的為 null，就用預設值
-    MySelf = widget.MySelf ?? _defaultMySelf;
-    _userManager.setupOnMessageReceived(MySelf);
+    MySelf = widget.MySelf;
+    // dispatcher = MessageDispatcherProvider.of(context);
+    // _userManager.setupOnMessageReceived(MySelf, );
     MySelf.startClient();
     super.initState();
+  }
+
+  @override // for Callbackk
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    dispatcher = MessageDispatcherProvider.of(context);
+
+    // Dispatcher 註冊處理器
+    dispatcher.registerHandler(ServiceType.send_user_to_user, (
+      ChatMsg chatmsg,
+    ) {
+      // 例如處理聊天訊息
+      _userManager.addChatMessage(chatmsg.senderID, chatmsg);
+      print("收到聊天訊息: ${chatmsg.content}");
+    });
+
+    // Dispatcher 註冊處理器
+    dispatcher.registerHandler(ServiceType.ai_reply, (ChatMsg chatmsg) {
+      // 例如處理聊天訊息
+      _userManager.addChatMessage(chatmsg.senderID, chatmsg);
+      print("收到聊天訊息: ${chatmsg.content}");
+    });
+
+    // dispatcher.registerHandler(ServiceType.load_user, (ChatMsg msg) {
+    //   // 例如處理使用者列表
+    // });
+
+    // 把 dispatcher 指定給 MySelf 處理進入點
+    MySelf.onMessageReceived = (msgString) {
+      dispatcher.dispatch(msgString);
+    };
+    _isDispatcherInitialized = true; // ✅ 避免重複註冊
   }
 
   @override

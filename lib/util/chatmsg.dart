@@ -14,7 +14,7 @@ enum ServiceType {
   send_user_to_user,
   request_post,
   build_post,
-  load_user 
+  load_user,
 }
 
 // USER_TO_USER = "send_user_to_user"
@@ -102,7 +102,7 @@ class ChatMsg {
   }
 
   factory ChatMsg.fromJson(Map<String, dynamic> json) {
-    return ChatMsg(
+    ChatMsg msg = ChatMsg(
       sender: json['sender'],
       senderID: json['senderID'] ?? '',
       receiver: json['receiver'],
@@ -111,12 +111,14 @@ class ChatMsg {
         (e) => e.name == json['type'],
         orElse: () => MessageType.text,
       ),
-      content: json['content'],
+      content: json['content'].toString(),
       timestamp: json['timestamp'],
       service: ServiceType.values.firstWhere(
         (e) => e.name == json['service'],
         orElse: () => ServiceType.none,
       ),
     );
+
+    return msg;
   }
 }

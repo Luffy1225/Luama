@@ -4,6 +4,8 @@ import 'dart:convert';
 import '../../util/user.dart';
 import '../../util/app_colors.dart'; // 引用自訂顏色
 import '../../util/chatmsg.dart';
+import '../../util/message_dispatcher.dart'; // 引用自訂顏色
+
 import 'package:url_launcher/url_launcher.dart';
 
 class Nav_HomeWidget extends StatefulWidget {
@@ -21,11 +23,20 @@ class Nav_HomeWidget extends StatefulWidget {
 }
 
 class _Nav_HomeWidgetState extends State<Nav_HomeWidget> {
+  bool _isDispatcherInitialized = false;
+  var dispatcher = MessageDispatcher();
+
   @override
   void initState() {
     super.initState();
     NewsManager.clearNews();
     _requestFromServer(); // ✅ 初始化時執行並處理 setState
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _registerDispatcherHandlers();
   }
 
   @override
@@ -63,21 +74,66 @@ class _Nav_HomeWidgetState extends State<Nav_HomeWidget> {
       timestamp: GetNowTimeStamp(),
     );
 
-    widget.mySelf.onMessageReceived = (String jsonMessage) {
-      List<dynamic> newsList = [];
-      try {
-        var json_obj = jsonDecode(jsonMessage);
-        final String userFrom = json_obj["sender"] ?? "";
-        final String receiver = json_obj["receiver"] ?? "";
-        final String msgTypeStr = json_obj["type"] ?? "text";
-        final MessageType msgType = MessageType.values.firstWhere(
-          (e) => e.toString().split('.').last == msgTypeStr,
-          orElse: () => MessageType.text,
-        );
+    // widget.mySelf.onMessageReceived = (String jsonMessage) {
+    //   List<dynamic> newsList = [];
+    //   try {
+    //     var json_obj = jsonDecode(jsonMessage);
+    //     final String userFrom = json_obj["sender"] ?? "";
+    //     final String receiver = json_obj["receiver"] ?? "";
+    //     final String msgTypeStr = json_obj["type"] ?? "text";
+    //     final MessageType msgType = MessageType.values.firstWhere(
+    //       (e) => e.toString().split('.').last == msgTypeStr,
+    //       orElse: () => MessageType.text,
+    //     );
 
-        final dynamic contentData = json_obj["content"];
-        if (contentData is List) {
-          for (var newsInfo in contentData) {
+    //     final dynamic contentData = json_obj["content"];
+    //     if (contentData is List) {
+    //       for (var newsInfo in contentData) {
+    //         News news = News(
+    //           pictureUrl: newsInfo["pictureUrl"],
+    //           title: newsInfo["title"],
+    //           time: newsInfo["time"],
+    //           newsUrl: newsInfo["newsUrl"],
+    //         );
+    //         NewsManager.addNews(news);
+    //       }
+    //     } else {
+    //       print("from NAV_HOME: ❌ content 欄位不是 List！");
+    //     }
+    //   } catch (e) {
+    //     print("Error: $e");
+    //   }
+    //   // content 是字串形式的 JSON 陣列 → 再解一次
+
+    //   // ✅ 使用 setState 更新畫面
+    //   setState(() {
+    //     for (var newsInfo in newsList) {
+    //       News news = News(
+    //         pictureUrl: newsInfo["pictureUrl"],
+    //         title: newsInfo["title"],
+    //         time: newsInfo["time"],
+    //         newsUrl: newsInfo["newsUrl"],
+    //       );
+    //       NewsManager.addNews(news);
+    //     }
+    //   });
+    // };
+    widget.mySelf.sendMessage(Req_NewsMsg); // 呼叫發送訊息給 Server
+  }
+
+  // 在初始化或 didChangeDependencies 註冊 handler，處理 load_user 的回應
+  void _registerDispatcherHandlers() {
+    dispatcher = MessageDispatcherProvider.of(context);
+
+    if (_isDispatcherInitialized) return; // 已經註冊過，直接跳過
+
+    dispatcher.registerHandler(ServiceType.request_news, (ChatMsg msg) {
+      try {
+        final contentData = msg.content; // 假設 content 是 JSON 字串
+        final newsListJson = jsonDecode(contentData) as List<dynamic>;
+
+        setState(() {
+          for (var newsInfo in newsListJson) {
             News news = News(
               pictureUrl: newsInfo["pictureUrl"],
               title: newsInfo["title"],
@@ -86,28 +142,12 @@ class _Nav_HomeWidgetState extends State<Nav_HomeWidget> {
             );
             NewsManager.addNews(news);
           }
-        } else {
-          print("❌ content 欄位不是 List！");
-        }
+        });
       } catch (e) {
-        print("Error: $e");
+        print("解析使用者清單錯誤: $e");
       }
-      // content 是字串形式的 JSON 陣列 → 再解一次
-
-      // ✅ 使用 setState 更新畫面
-      setState(() {
-        for (var newsInfo in newsList) {
-          News news = News(
-            pictureUrl: newsInfo["pictureUrl"],
-            title: newsInfo["title"],
-            time: newsInfo["time"],
-            newsUrl: newsInfo["newsUrl"],
-          );
-          NewsManager.addNews(news);
-        }
-      });
-    };
-    widget.mySelf.sendMessage(Req_NewsMsg); // 呼叫發送訊息給 Server
+    });
+    _isDispatcherInitialized = true; // 避免重複註冊
   }
 }
 

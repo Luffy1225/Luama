@@ -5,6 +5,7 @@ import '../../util/user.dart';
 import '../../util/app_colors.dart'; // 引用自訂顏色
 import '../../util/chatmsg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../util/message_dispatcher.dart'; // 引用自訂顏色
 
 import 'package:uuid/uuid.dart';
 
@@ -23,10 +24,19 @@ class Nav_PostWidget extends StatefulWidget {
 class _Nav_PostWidgetState extends State<Nav_PostWidget> {
   PostManager postManager = PostManager();
 
+  bool _isDispatcherInitialized = false;
+  var dispatcher = MessageDispatcher();
+
   @override
   void initState() {
     super.initState();
     _requestFromServer(); // ✅ 初始化時執行並處理 setState
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _registerDispatcherHandlers();
   }
 
   @override
@@ -149,21 +159,70 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
       timestamp: GetNowTimeStamp(),
     );
 
-    widget.mySelf.onMessageReceived = (String jsonMessage) {
-      List<dynamic> postList = [];
-      try {
-        var json_obj = jsonDecode(jsonMessage);
-        final String userFrom = json_obj["sender"] ?? "";
-        final String receiver = json_obj["receiver"] ?? "";
-        final String msgTypeStr = json_obj["type"] ?? "text";
-        final MessageType msgType = MessageType.values.firstWhere(
-          (e) => e.toString().split('.').last == msgTypeStr,
-          orElse: () => MessageType.text,
-        );
+    // widget.mySelf.onMessageReceived = (String jsonMessage) {
+    //   List<dynamic> postList = [];
+    //   try {
+    //     var json_obj = jsonDecode(jsonMessage);
+    //     final String userFrom = json_obj["sender"] ?? "";
+    //     final String receiver = json_obj["receiver"] ?? "";
+    //     final String msgTypeStr = json_obj["type"] ?? "text";
+    //     final MessageType msgType = MessageType.values.firstWhere(
+    //       (e) => e.toString().split('.').last == msgTypeStr,
+    //       orElse: () => MessageType.text,
+    //     );
 
-        final dynamic contentData = json_obj["content"];
-        if (contentData is List) {
-          for (var postInfo in contentData) {
+    //     final dynamic contentData = json_obj["content"];
+    //     if (contentData is List) {
+    //       for (var postInfo in contentData) {
+    //         Post post = Post(
+    //           userName: postInfo["userName"],
+    //           userID: postInfo["userID"],
+    //           title: postInfo["title"],
+    //           time: postInfo["time"],
+    //           content: postInfo["content"],
+    //           // comments: postInfo["comments"],
+    //         );
+    //         postManager.addNews(post);
+    //       }
+    //     } else {
+    //       print("from NAV_POST: ❌ content 欄位不是 List！");
+    //     }
+    //   } catch (e) {
+    //     print("Error: $e");
+    //   }
+    //   // content 是字串形式的 JSON 陣列 → 再解一次
+
+    //   // ✅ 使用 setState 更新畫面
+    //   setState(() {
+    //     for (var postInfo in postList) {
+    //       Post post = Post(
+    //         userName: postInfo["userName"],
+    //         userID: postInfo["userid"],
+    //         title: postInfo["title"],
+    //         time: postInfo["time"],
+    //         content: postInfo["content"],
+    //         comments: postInfo["comments"],
+    //       );
+    //       postManager.addNews(post);
+    //     }
+    //   });
+    // };
+    widget.mySelf.sendMessage(Req_NewsMsg); // 呼叫發送訊息給 Server
+  }
+
+  // 在初始化或 didChangeDependencies 註冊 handler，處理 load_user 的回應
+  void _registerDispatcherHandlers() {
+    dispatcher = MessageDispatcherProvider.of(context);
+
+    if (_isDispatcherInitialized) return; // 已經註冊過，直接跳過
+
+    dispatcher.registerHandler(ServiceType.request_post, (ChatMsg msg) {
+      try {
+        final contentData = msg.content; // 假設 content 是 JSON 字串
+        final postListJson = jsonDecode(contentData) as List<dynamic>;
+
+        setState(() {
+          for (var postInfo in postListJson) {
             Post post = Post(
               userName: postInfo["userName"],
               userID: postInfo["userID"],
@@ -174,30 +233,12 @@ class _Nav_PostWidgetState extends State<Nav_PostWidget> {
             );
             postManager.addNews(post);
           }
-        } else {
-          print("❌ content 欄位不是 List！");
-        }
+        });
       } catch (e) {
-        print("Error: $e");
+        print("解析使用者清單錯誤: $e");
       }
-      // content 是字串形式的 JSON 陣列 → 再解一次
-
-      // ✅ 使用 setState 更新畫面
-      setState(() {
-        for (var postInfo in postList) {
-          Post post = Post(
-            userName: postInfo["userName"],
-            userID: postInfo["userid"],
-            title: postInfo["title"],
-            time: postInfo["time"],
-            content: postInfo["content"],
-            comments: postInfo["comments"],
-          );
-          postManager.addNews(post);
-        }
-      });
-    };
-    widget.mySelf.sendMessage(Req_NewsMsg); // 呼叫發送訊息給 Server
+    });
+    _isDispatcherInitialized = true; // 避免重複註冊
   }
 }
 

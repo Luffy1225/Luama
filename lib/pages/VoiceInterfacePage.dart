@@ -5,6 +5,7 @@ import '../util/STTAndTTSManager.dart';
 import '../util/user.dart';
 import '../util/chatmsg.dart';
 import '../util/Page_animation.dart';
+import '../util/message_dispatcher.dart';
 
 class VoiceInterfacePage extends StatefulWidget {
   final TUser selfUser;
@@ -26,6 +27,9 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
   late TUser SelfUser;
   late TUser TargetUser;
   late List<ChatMsg> _JSON_ChatHistory;
+
+  bool _isDispatcherInitialized = false;
+  var dispatcher = MessageDispatcher();
 
   bool _isRecording = false;
   String _ShowText = "";
@@ -84,6 +88,32 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
       sttTtsManager.speak(chatmsg.content);
       print("Speak Done");
     };
+
+    // 在初始化或 didChangeDependencies 註冊 handler，處理 load_user 的回應
+    void _registerDispatcherHandlers() {
+      dispatcher = MessageDispatcherProvider.of(context);
+
+      if (_isDispatcherInitialized) return; // 已經註冊過，直接跳過
+
+      dispatcher.registerHandler(ServiceType.ai_reply, (ChatMsg msg) {
+        try {
+          final contentData = msg.content; // 假設 content 是 JSON 字串
+          final jsonData = jsonDecode(contentData);
+          final chatmsg = ChatMsg.fromJson(jsonData);
+          // print(jsonData);
+          _JSON_ChatHistory.add(chatmsg);
+
+          setState(() {
+            _ShowText = _JSON_ChatHistory.last.content;
+          });
+          sttTtsManager.speak(chatmsg.content);
+          print("Speak Done");
+        } catch (e) {
+          print("解析使用者清單錯誤: $e");
+        }
+      });
+      _isDispatcherInitialized = true; // 避免重複註冊
+    }
   }
 
   @override
@@ -237,6 +267,11 @@ class _VoiceInterfacePageState extends State<VoiceInterfacePage> {
     sttTtsManager.setOnResultCallback(null);
     sttTtsManager.stopListening();
     sttTtsManager.Stopspeak();
+    // 移除 dispatcher 的 handler
+    if (_isDispatcherInitialized) {
+      dispatcher.unregisterHandler(ServiceType.ai_reply);
+      _isDispatcherInitialized = false;
+    }
     super.dispose();
   }
 }

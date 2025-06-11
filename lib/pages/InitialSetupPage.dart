@@ -7,14 +7,206 @@ import '../main.dart';
 import '../util/Page_animation.dart';
 import '../util/app_colors.dart';
 
-class InitialSetupPage extends StatelessWidget {
-  InitialSetupPage({super.key});
+// class InitialSetupPage extends StatelessWidget {
+//   InitialSetupPage({super.key});
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController idController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController ipController = TextEditingController();
-  final TextEditingController portController = TextEditingController();
+//   // final TextEditingController nameController = TextEditingController();
+//   // final TextEditingController idController = TextEditingController();
+//   // final TextEditingController emailController = TextEditingController();
+//   // final TextEditingController ipController = TextEditingController();
+//   // final TextEditingController portController = TextEditingController();
+
+//   late TextEditingController nameController;
+//   late TextEditingController idController;
+//   late TextEditingController emailController;
+//   late TextEditingController ipController;
+//   late TextEditingController portController;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final appColors = AppColorsProvider.of(context);
+
+//     return Scaffold(
+//       backgroundColor: appColors.ScaffoldBackground,
+//       body: SafeArea(
+//         child: Column(
+//           children: [
+//             Padding(
+//               padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+//               child: Center(
+//                 child: Text(
+//                   'Luama',
+//                   style: TextStyle(
+//                     fontSize: 32,
+//                     fontWeight: FontWeight.bold,
+//                     color: appColors.TopBar_Title,
+//                     letterSpacing: 0.5,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             Expanded(
+//               child: SingleChildScrollView(
+//                 padding: const EdgeInsets.symmetric(horizontal: 16),
+//                 child: Column(
+//                   children: [
+//                     const SizedBox(height: 12),
+//                     Column(
+//                       children: [
+//                         Container(
+//                           height: 128,
+//                           width: 128,
+//                           decoration: BoxDecoration(
+//                             shape: BoxShape.circle,
+//                             image: DecorationImage(
+//                               image: NetworkImage(
+//                                 'https://lh3.googleusercontent.com/aida-public/AB6AXuAWjASnsmvnLF9LkSlwqzW3HnDa_PiyZ1wPqQweTedCq9__iJFrF4z8xLyYc4HiEDSqxh0Zk4uC5pqY0AsLOW1pv8P7zx1qT4RBVkDo4WuKIVBRE9B0ljPkzqtgQo2UnZJ3X5lMXD4KRd5MVv1nMs-nFm4sHqohzYElBQhIaF_fvnH3QUjTl1WsJPwRzJrz9BDdn7FKZxqbtbeT25CWwE22IQjnbwULWqCYd6TgaUkekqTujsqX7R-W7Q0kJuWYQrznCvGjwOggITM',
+//                               ),
+//                               fit: BoxFit.cover,
+//                             ),
+//                           ),
+//                         ),
+//                         const SizedBox(height: 12),
+//                         Text(
+//                           'Set Personal Information',
+//                           textAlign: TextAlign.center,
+//                           style: TextStyle(
+//                             fontSize: 22,
+//                             fontWeight: FontWeight.bold,
+//                             color: appColors.PrimaryText,
+//                             letterSpacing: -0.015,
+//                           ),
+//                         ),
+//                         const SizedBox(height: 8),
+//                         Text(
+//                           'Please provide your details to personalize your experience.',
+//                           textAlign: TextAlign.center,
+//                           style: TextStyle(
+//                             fontSize: 16,
+//                             color: appColors.PrimaryText,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(height: 24),
+//                     _InputField(
+//                       placeholder: 'Username',
+//                       controller: nameController,
+//                     ),
+//                     _InputField(
+//                       placeholder: 'User ID',
+//                       controller: idController,
+//                     ),
+//                     const SizedBox(height: 8),
+//                     _CheckboxSetting(
+//                       nameController: nameController,
+//                       idController: idController,
+//                       emailController: emailController,
+//                     ),
+//                     const SizedBox(height: 24),
+//                     _FoldRegion(
+//                       ipController: ipController,
+//                       portController: portController,
+//                     ),
+//                     const SizedBox(height: 20),
+//                     SizedBox(
+//                       width: double.infinity,
+//                       height: 48,
+//                       child: ElevatedButton(
+//                         style: ElevatedButton.styleFrom(
+//                           backgroundColor: appColors.TextBox_Background,
+//                           foregroundColor: appColors.PrimaryText,
+//                           shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(16),
+//                           ),
+//                           padding: const EdgeInsets.symmetric(horizontal: 20),
+//                         ),
+//                         onPressed: () {
+//                           _DoneInitial(context);
+//                         },
+//                         child: Text(
+//                           'Continue',
+//                           style: TextStyle(
+//                             fontSize: 16,
+//                             fontWeight: FontWeight.bold,
+//                             letterSpacing: 0.15,
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                     const SizedBox(height: 20),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   void _DoneInitial(BuildContext context) {
+//     if (idController.text == "" || nameController.text == "") {
+//       SnackMessage(text: "Name 跟 ID 任一不可為空白").show(context);
+//       return;
+//     }
+
+//     TUser myself = TUser(
+//       userID: idController.text,
+//       userName: nameController.text,
+//       email: emailController.text,
+//       profileImage: "",
+//     );
+
+//     if (ipController.text != "" || portController.text != "") {
+//       // myself.SetIP(ipController.text);
+//       // myself.SetPort(portController.text);
+
+//       String ngrokip = ipController.text + ".tcp.ngrok.io";
+//       myself.SetIP(ngrokip);
+//       myself.SetPort(portController.text);
+//     }
+
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(builder: (context) => Homepage(MySelf: myself)),
+//     );
+//   }
+// }
+
+class InitialSetupPage extends StatefulWidget {
+  const InitialSetupPage({super.key});
+
+  @override
+  State<InitialSetupPage> createState() => _InitialSetupPageState();
+}
+
+class _InitialSetupPageState extends State<InitialSetupPage> {
+  late TextEditingController nameController;
+  late TextEditingController idController;
+  late TextEditingController emailController;
+  late TextEditingController ipController;
+  late TextEditingController portController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController();
+    idController = TextEditingController();
+    emailController = TextEditingController();
+    ipController = TextEditingController();
+    portController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    idController.dispose();
+    emailController.dispose();
+    ipController.dispose();
+    portController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +345,11 @@ class InitialSetupPage extends StatelessWidget {
     );
 
     if (ipController.text != "" || portController.text != "") {
-      myself.SetIP(ipController.text);
+      // myself.SetIP(ipController.text);
+      // myself.SetPort(portController.text);
+
+      String ngrokip = ipController.text + ".tcp.ngrok.io";
+      myself.SetIP(ngrokip);
       myself.SetPort(portController.text);
     }
 
@@ -332,7 +528,7 @@ class _FoldRegionState extends State<_FoldRegion> {
             ),
             children: [
               _InputField(
-                placeholder: 'Server IP Address',
+                placeholder: 'Ngrok id',
                 controller: widget.ipController,
               ),
               _InputField(

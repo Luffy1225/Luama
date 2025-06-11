@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'message_dispatcher.dart';
 
 import 'client.dart';
 import 'server.dart';
@@ -169,7 +170,7 @@ class TUser {
       'profileImage': profileImage,
       'email': email,
       'isOnline': isOnline,
-      'isAIAgent':isAIAgent,
+      'isAIAgent': isAIAgent,
     };
   }
 
@@ -191,14 +192,6 @@ class TUser {
     );
   }
 
-  // static TUser loadSelfData() {
-  //   return TUser(
-  //     userID: "1225",
-  //     userName: "Luffy",
-  //     profileImage: "",
-  //     email: "Luffy1225",
-  //   );
-  // }
   ChatMsg buildLoginChatMsg() {
     Map<String, dynamic> UserJsonInfo = toJson();
 
@@ -242,25 +235,38 @@ class UserManager extends ChangeNotifier {
         email: "",
         isAIAgent: true,
       ),
-      TUser(userID: "0003", userName: "Yuniko", profileImage: "", email: ""),
-      TUser(userID: "0004", userName: "Nami", profileImage: "", email: ""),
+      // TUser(userID: "0003", userName: "Yuniko", profileImage: "", email: ""),
+      // TUser(userID: "0004", userName: "Nami", profileImage: "", email: ""),
       TUser(userID: "0005", userName: "Usopp", profileImage: "", email: ""),
-      TUser(userID: "0006", userName: "Sanji", profileImage: "", email: ""),
-      TUser(userID: "0007", userName: "Chopper", profileImage: "", email: ""),
-      TUser(userID: "0008", userName: "Robin", profileImage: "", email: ""),
-      TUser(userID: "0009", userName: "Franky", profileImage: "", email: ""),
-      TUser(userID: "0000", userName: "Brook", profileImage: "", email: ""),
-      TUser(userID: "0011", userName: "Jinbe", profileImage: "", email: ""),
-      TUser(userID: "0012", userName: "Vivi", profileImage: "", email: ""),
-      TUser(userID: "0013", userName: "Carrot", profileImage: "", email: ""),
-      TUser(userID: "0014", userName: "Yamato", profileImage: "", email: ""),
-      TUser(userID: "0015", userName: "Bonney", profileImage: "", email: ""),
-      TUser(userID: "0016", userName: "Hancock", profileImage: "", email: ""),
+      // TUser(userID: "0006", userName: "Sanji", profileImage: "", email: ""),
+      // TUser(userID: "0007", userName: "Chopper", profileImage: "", email: ""),
+      // TUser(userID: "0008", userName: "Robin", profileImage: "", email: ""),
+      // TUser(userID: "0009", userName: "Franky", profileImage: "", email: ""),
+      // TUser(userID: "0000", userName: "Brook", profileImage: "", email: ""),
+      // TUser(userID: "0011", userName: "Jinbe", profileImage: "", email: ""),
+      // TUser(userID: "0012", userName: "Vivi", profileImage: "", email: ""),
+      // TUser(userID: "0013", userName: "Carrot", profileImage: "", email: ""),
+      // TUser(userID: "0014", userName: "Yamato", profileImage: "", email: ""),
+      // TUser(userID: "0015", userName: "Bonney", profileImage: "", email: ""),
+      // TUser(userID: "0016", userName: "Hancock", profileImage: "", email: ""),
     ];
   }
 
   void addUser(TUser user) {
-    users.add(user);
+    if (!users.contains(user)) {
+      users.add(user);
+      // notifyListeners();  // 如果你需要讓 UI 更新，可以呼叫這個
+    } else {
+      print("用戶已存在，未重複加入: ${user.userID}");
+    }
+  }
+
+  bool ifUserExist(TUser user) {
+    if (!users.contains(user)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   void sortBy(SortRule rule) {
@@ -291,32 +297,34 @@ class UserManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setupOnMessageReceived(TUser user) {
-    /// NEWWWW
-    try {
-      user.onMessageReceived = (messageString) {
-        final jsonData = jsonDecode(messageString);
-        final chatmsg = ChatMsg.fromJson(jsonData);
-        addChatMessage(chatmsg.senderID, chatmsg);
-        // addChatMessage(chatmsg.receiver, chatmsg);
-        // addChatMessage(user.userID, chatmsg); //感覺是放
-      };
-    } catch (e) {
-      print("JSON parsing error: $e");
-    }
-  }
-
-  //  void setupOnMessageReceived(TUser user) {
-  //   user.onMessageReceived = (messageString) {
-  //     try {
+  // void setupOnMessageReceived(TUser user) {
+  //   /// NEWWWW
+  //   try {
+  //     user.onMessageReceived = (messageString) {
   //       final jsonData = jsonDecode(messageString);
   //       final chatmsg = ChatMsg.fromJson(jsonData);
-  //       _chatHistories.putIfAbsent(chatmsg.senderId, () => []).add(chatmsg);
-  //       notifyListeners();
-  //     } catch (e) {
-  //       print("JSON parsing error: $e");
-  //     }
+  //       addChatMessage(chatmsg.senderID, chatmsg);
+  //       // addChatMessage(chatmsg.receiver, chatmsg);
+  //       // addChatMessage(user.userID, chatmsg); //感覺是放
+  //     };
+  //   } catch (e) {
+  //     print("JSON parsing error: $e");
+  //   }
+  // }
+
+  void setupOnMessageReceived(TUser user, MessageDispatcher dispatcher) {
+    user.onMessageReceived = (messageString) {
+      dispatcher.dispatch(messageString); // ✅ 不自己解析，讓 dispatcher 處理
+    };
+  }
+
+  // void setupOnMessageReceived(TUser user) {
+
+  //   user.onMessageReceived = (String msg) {
+  //     dispatcher.dispatch(msg);
   //   };
+  // }
+  // 所有來自 socket 的訊息都交給 dispatcher
 
   List<ChatMsg> getChatHistory(String userID) {
     if (!userChatHistories.containsKey(userID)) {

@@ -21,8 +21,6 @@ class ChatPage extends StatefulWidget {
 
   const ChatPage(this.selfUser, this.targetUser, this.userManager);
 
-  // const ChatPage({super.key});
-
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
@@ -32,16 +30,12 @@ class _ChatPageState extends State<ChatPage> {
   late TUser TargetUser;
 
   bool is_fileExisted = false;
-  // bool _isRecording = false; // 是否正在錄音
 
   List<ChatMsg> _JSON_ChatHistory = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  late Function(String)? originalOnMessageReceived; //
   File? _selectedImage; // 加入圖片選擇變數
-
-  // final List<Map<String, dynamic>> messages = [];
 
   @override
   void initState() {
@@ -55,35 +49,6 @@ class _ChatPageState extends State<ChatPage> {
     });
 
     widget.userManager.addListener(_updateChatHistory);
-
-    // SelfUser.startClient();
-
-    // originalOnMessageReceived = (messageString) {
-    //   try {
-    //     // 將 JSON 字串轉換成 ChatMessage 物件
-    //     final jsonData = jsonDecode(messageString);
-    //     final chatmsg = ChatMsg.fromJson(jsonData);
-
-    //     print(jsonData);
-
-    //     // 呼叫 UI 更新（只處理物件，不直接處理 json 字串）
-    //     setState(() {
-    //       _JSON_ChatHistory.add(chatmsg);
-    //     });
-
-    //     Future.delayed(Duration(milliseconds: 100), () {
-    //       _scrollController.animateTo(
-    //         _scrollController.position.maxScrollExtent,
-    //         duration: Duration(milliseconds: 300),
-    //         curve: Curves.easeOut,
-    //       );
-    //     });
-    //   } catch (e) {
-    //     print("JSON parsing error: $e");
-    //   }
-    // };
-
-    // SelfUser.onMessageReceived = originalOnMessageReceived;
   }
 
   void _updateChatHistory() {
@@ -251,14 +216,6 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ],
                   );
-
-                  // return _chatBubble(
-                  //   appColors: appColors,
-                  //   chatmsg: _JSON_ChatHistory[index],
-                  //   isSender: isMe,
-                  //   avatarUrl:
-                  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0NDoh9uyWemrItrMIqmxBpLwT2RqSv2NtjYhF4D9iDX1J75gULkNDMYjV6JJ-dR7s0xtmnUfPAR1wyWBiaqI2-NyALX6d_Owu5fV45R7gk8X13WZIi58Sv1Yc7LTODGKkbeoUkRNZIYFmaDSKhbqr56TLLtMRLZ8cNoRSxGT9lGeG_FAbKhinM6plhfiuJKqztkSskWeNFBoQbLJQ22wRvdsa3T8kwXpD6gjIOzPzZIbSkxixfBNAo1W7Dr5TsnZ8EJxIOb34Bxzi",
-                  // );
                 },
               ),
             ),
@@ -295,7 +252,10 @@ class _ChatPageState extends State<ChatPage> {
                     builder: (context, value, child) {
                       final hasText = value.text.trim().isNotEmpty;
                       return GestureDetector(
-                        onTap: hasText ? _sendMessage : OpenSSTandTTSpage,
+                        onTap:
+                            TargetUser.isAIAgent
+                                ? (hasText ? _sendMessage : OpenSSTandTTSpage)
+                                : _sendMessage,
                         child: Container(
                           decoration: BoxDecoration(
                             color: appColors.SendButtonBackground,
@@ -303,7 +263,9 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                           padding: const EdgeInsets.all(12),
                           child: Icon(
-                            hasText ? Icons.arrow_upward : Icons.mic,
+                            TargetUser.isAIAgent
+                                ? (hasText ? Icons.arrow_upward : Icons.mic)
+                                : Icons.arrow_upward,
                             color: appColors.SendButtonIconColor,
                             size: 20,
                           ),
@@ -334,17 +296,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void OpenSSTandTTSpage() {
-    Navigator.of(context)
-        .push(
-          createRoute(
-            VoiceInterfacePage(SelfUser, TargetUser, _JSON_ChatHistory),
-            Anima_Direction.FromRightIn,
-          ),
-        )
-        .then((_) {
-          SelfUser.onMessageReceived = originalOnMessageReceived;
-          setState(() {});
-        });
+    Navigator.of(context).push(
+      createRoute(
+        VoiceInterfacePage(SelfUser, TargetUser, _JSON_ChatHistory),
+        Anima_Direction.FromRightIn,
+      ),
+    );
   }
 
   Widget _chatBubble({
@@ -426,9 +383,7 @@ class _ChatPageState extends State<ChatPage> {
       content: "Reset",
       timestamp: GetNowTimeStamp(),
     );
-
     SelfUser.sendMessage(Resetmessage);
-
     SnackMessage(text: "重設AI").show(context);
   }
 
