@@ -89,7 +89,6 @@ class LuamaServer:
                 conn, addr = self.server_socket.accept()
                 print("\n🔗 已連線：", addr)
                 self.clients_SOCKET.append(conn)
-                # self.clientslist[]
                 threading.Thread(
                     target=self.handle_client, args=(conn, addr), daemon=True
                 ).start()
@@ -138,12 +137,8 @@ class LuamaServer:
 
     # 處理每個 client
     def handle_client(self, conn, addr):
-        # client_key = str(addr)  # 不用 client_key了
-        # self.client_histories[client_key] = {}
-
         is_registered = False
         user_info = {}
-
         try:
             while True:
                 data = conn.recv(1024)
@@ -153,48 +148,7 @@ class LuamaServer:
                 try:
                     json_obj = json.loads(data.decode("utf-8"))
                     print(f"Receive User Raw Data：{json_obj}")
-
-                    # if not is_registered:
-
-                    #     register_info_str = json_obj.get("content")
-                    #     register_info = json.loads(
-                    #         register_info_str
-                    #     )  # 這裡把字串轉成 dict
-                    #     # 嘗試判斷是否為註冊訊息 (包含 Username 和 UserID)
-                    #     if "userName" in register_info and "userId" in register_info:
-                    #         user_info = {
-                    #             "userName": register_info["userName"],
-                    #             "userId": register_info["userId"],
-                    #         }
-                    #         print(f"✅ 使用者註冊成功: {user_info}")
-                    #         is_registered = True
-
-                    #         # 記錄連線對應的 userId
-                    #         userId = user_info["userId"]
-                    #         self.clientslist[user_info["userId"]] = (
-                    #             conn  # userId 作為 clientslist 的指標
-                    #         )
-                    #         self.client_histories[user_info["userId"]] = {}
-
-                    #         # 你可以回覆一個確認訊息
-                    #         response = {
-                    #             "status": "success",
-                    #             "message": "使用者註冊成功",
-                    #         }
-                    #         conn.sendall(json.dumps(response).encode("utf-8"))
-                    #         continue
-                    #     else:
-                    #         # 尚未註冊且資料不符，拒絕後續操作
-                    #         response = {
-                    #             "status": "error",
-                    #             "message": "請先註冊，訊息需包含 userName 和 userId",
-                    #         }
-                    #         conn.sendall(json.dumps(response).encode("utf-8"))
-                    #         continue
-
-                    # service_type = json_obj.get("service")
                     service_type = ServiceType(json_obj.get("service", "none"))
-
                     response_ChatMsg = None
 
                     if service_type == ServiceType.AI_REPLY:
@@ -223,8 +177,6 @@ class LuamaServer:
                         response_ChatMsg_Str = chat_msg_to_string(response_ChatMsg)
                         print(response_ChatMsg_Str)
                         conn.sendall(response_ChatMsg_Str.encode("utf-8"))
-                    # else:
-                    #     # print(f"response_ChatMsg 為 None")
 
                 except json.JSONDecodeError:
                     conn.sendall(json.dumps({"error": "無法解析 JSON"}).encode("utf-8"))
@@ -390,7 +342,7 @@ class LuamaServer:
                     isAIAgent=register_info["isAIAgent"],
                 )
 
-                for user in self.user_info_list:  # TODO fix
+                for user in self.user_info_list:
                     if user.userID == User_info.userID:
                         message = f"使用者ID: {User_info.userID} 重複註冊"
 
